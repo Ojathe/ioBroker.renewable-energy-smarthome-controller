@@ -6,7 +6,7 @@
     "name": "kjub",
     "email": "oliver.jathe@gmx.de"
   },
-  "homepage": "https://github.com/kjub87/ioBroker.renewable-energy-smarthome-controller",
+  "homepage": "https://github.com/Ojathe/ioBroker.renewable-energy-smarthome-controller",
   "license": "MIT",
   "keywords": [
     "renewable",
@@ -16,7 +16,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git@github.com:kjub87/ioBroker.renewable-energy-smarthome-controller.git"
+    "url": "git@github.com:Ojathe/ioBroker.renewable-energy-smarthome-controller.git"
   },
   "engines": {
     "node": ">= 16"
@@ -93,7 +93,7 @@
     "release": "release-script"
   },
   "bugs": {
-    "url": "https://github.com/kjub87/ioBroker.renewable-energy-smarthome-controller/issues"
+    "url": "https://github.com/Ojathe/ioBroker.renewable-energy-smarthome-controller/issues"
   },
   "readmeFilename": "README.md"
 }
