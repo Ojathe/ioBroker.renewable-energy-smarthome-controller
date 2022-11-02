@@ -1,0 +1,80 @@
+{
+	"common": {
+		"name": "renewable-energy-smarthome-controller",
+		"version": "0.0.1",
+		"news": {
+			"0.0.1": {
+				"en": "initial release",
+				"de": "Erstveröffentlichung",
+				"ru": "Начальная версия",
+				"pt": "lançamento inicial",
+				"nl": "Eerste uitgave",
+				"fr": "Première version",
+				"it": "Versione iniziale",
+				"es": "Versión inicial",
+				"pl": "Pierwsze wydanie",
+				"zh-cn": "首次出版"
+			}
+		},
+		"title": "Renewable Energy SmartHome Controller",
+		"titleLang": {
+			"en": "Renewable Energy SmartHome Controller",
+			"de": "Erneuerbare Energie SmartHome Controller",
+			"ru": "Контроллер умного дома на возобновляемых источниках энергии",
+			"pt": "Controlador SmartHome de Energia Renovável",
+			"nl": "SmartHome-controller voor hernieuwbare energie",
+			"fr": "Contrôleur d'énergie renouvelable SmartHome",
+			"it": "Regolatore SmartHome a energia rinnovabile",
+			"es": "Controlador SmartHome de energía renovable",
+			"pl": "Sterownik SmartHome Energii Odnawialnej",
+			"zh-cn": "可再生能源智能家居控制器"
+		},
+		"desc": {
+			"en": "control your power devices in a smart way if you're producing renewable energy",
+			"de": "Steuern Sie Ihre Stromgeräte auf intelligente Weise, wenn Sie erneuerbare Energie produzieren",
+			"ru": "разумно управляйте своими силовыми устройствами, если вы производите возобновляемую энергию",
+			"pt": "controle seus dispositivos de energia de maneira inteligente se estiver produzindo energia renovável",
+			"nl": "bedien uw stroomapparaten op een slimme manier als u duurzame energie produceert",
+			"fr": "contrôlez vos appareils électriques de manière intelligente si vous produisez de l'énergie renouvelable",
+			"it": "controlla i tuoi dispositivi di alimentazione in modo intelligente se stai producendo energia rinnovabile",
+			"es": "controle sus dispositivos de energía de manera inteligente si está produciendo energía renovable",
+			"pl": "kontroluj swoje urządzenia zasilające w inteligentny sposób, jeśli produkujesz energię odnawialną",
+			"zh-cn": "如果您正在生产可再生能源，以智能方式控制您的电力设备"
+		},
+		"authors": ["kjub <oliver.jathe@gmx.de>"],
+		"keywords": ["renewable", "energy", "power", "controller"],
+		"license": "MIT",
+		"platform": "Javascript/Node.js",
+		"main": "build/main.js",
+		"icon": "renewable-energy-smarthome-controller.png",
+		"enabled": true,
+		"extIcon": "https://raw.githubusercontent.com/kjub87/ioBroker.renewable-energy-smarthome-controller/main/admin/renewable-energy-smarthome-controller.png",
+		"readme": "https://github.com/kjub87/ioBroker.renewable-energy-smarthome-controller/blob/main/README.md",
+		"loglevel": "info",
+		"mode": "daemon",
+		"type": "logic",
+		"compact": true,
+		"connectionType": "local",
+		"dataSource": "poll",
+		"adminUI": {
+			"config": "materialize"
+		},
+		"eraseOnUpload": true,
+		"dependencies": [
+			{
+				"js-controller": ">=3.3.22"
+			}
+		],
+		"globalDependencies": [
+			{
+				"admin": ">=5.0.0"
+			}
+		]
+	},
+	"native": {
+		"option1": true,
+		"option2": "42"
+	},
+	"objects": [],
+	"instanceObjects": []
+}
