@@ -1,10 +1,10 @@
 import { RenewableEnergySmarthomeController } from '../../main';
 
 export const getStateAsNumber = async (
-	context: RenewableEnergySmarthomeController,
+	adapter: RenewableEnergySmarthomeController,
 	xid: string,
 ): Promise<number | undefined> => {
-	const state = await context.getStateAsync(xid);
+	const state = await adapter.getStateAsync(`${adapter.name}.${adapter.instance}.` + xid);
 
 	if (!state) {
 		return undefined;
@@ -18,10 +18,10 @@ export const getStateAsNumber = async (
 };
 
 export const getStateAsBoolean = async (
-	context: RenewableEnergySmarthomeController,
+	adapter: RenewableEnergySmarthomeController,
 	xid: string,
 ): Promise<boolean | undefined> => {
-	const state = await context.getStateAsync(xid);
+	const state = await adapter.getStateAsync(xid);
 
 	if (!state) {
 		return undefined;

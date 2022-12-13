@@ -38,6 +38,10 @@ export class AverageValueHandler {
 					return Number.NEGATIVE_INFINITY;
 				}
 
+				console.log(
+					`Calculating PowerDif Load:${load} kWh, PV-Gen: ${pvPower} kWh => Dif of ${pvPower - load}`,
+				);
+
 				return pvPower - load;
 			},
 		});
@@ -50,6 +54,8 @@ export class AverageValueHandler {
 				return val * (isGridBuying ? -1 : 1);
 			},
 		});
+
+		// TODO BatteryPower (lg-ess-home.0.user.essinfo.common.BATT.dc_power)
 	}
 
 	public async calculate(): Promise<void> {
@@ -63,7 +69,7 @@ export class AverageValueHandler {
 		let sourceVal = 0;
 
 		if (item.xidSource) {
-			sourceVal = (await this.adapter.getStateAsync(item.xidSource))?.val as number;
+			sourceVal = (await getStateAsNumber(this.adapter, item.xidSource)) ?? 0;
 		}
 
 		if (item.mutation) {

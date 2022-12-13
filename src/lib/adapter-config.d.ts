@@ -7,6 +7,7 @@ declare global {
 			optionUseInfluxDb: boolean;
 			optionInstanceInfluxDb: number;
 			optionInstanceHistory: number;
+			optionEnergyManagementActive: boolean;
 			optionSourcePvGeneration: string;
 			optionSourceTotalLoad: string;
 			optionSourceBatterySoc: string;

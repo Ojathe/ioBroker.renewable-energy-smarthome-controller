@@ -18,12 +18,16 @@ import {
 } from './lib/dp-handler';
 
 import { scheduleJob } from 'node-schedule';
+import { AnalyzerBonus } from './lib/analyzer-bonus';
+import { AnalyzerLack } from './lib/analyzer-lack';
 
 // Load your modules here, e.g.:
 // import * as fs from "fs";
 
 export class RenewableEnergySmarthomeController extends utils.Adapter {
 	private avgValueHandler: AverageValueHandler | undefined;
+	private analyzerBonus: AnalyzerBonus | undefined;
+	private analyzerLack: AnalyzerLack | undefined;
 
 	public constructor(options: Partial<utils.AdapterOptions> = {}) {
 		super({
@@ -54,12 +58,20 @@ export class RenewableEnergySmarthomeController extends utils.Adapter {
 		addSubscriptions(this, this.config);
 
 		this.avgValueHandler = new AverageValueHandler(this);
+		this.analyzerBonus = new AnalyzerBonus(this, this.avgValueHandler);
+		this.analyzerLack = new AnalyzerLack(this, this.avgValueHandler);
 
 		// calculating average Values
 		// TODO make interval configurable
 		scheduleJob('*/20 * * * * *', () => {
 			console.log('calculating average Values');
 			this.avgValueHandler!.calculate();
+		});
+
+		scheduleJob('*/30 * * * * *', () => {
+			console.log('C H E C K I N G   F O R   B O N U S  /  L A C K');
+			this.analyzerBonus!.run();
+			this.analyzerLack!.run();
 		});
 	}
 

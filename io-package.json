@@ -85,6 +85,7 @@
         "optionUseInfluxDb": false,
         "optionInstanceInfluxDb": 0,
         "optionInstanceHistory": 0,
+        "optionEnergyManagementActive": true,
         "optionSourcePvGeneration": "lg-ess-home.0.user.essinfo.home.statistics.pcs_pv_total_power",
         "optionSourceTotalLoad": "lg-ess-home.0.user.essinfo.home.statistics.load_power",
         "optionSourceBatterySoc": "lg-ess-home.0.user.essinfo.common.BATT.soc",

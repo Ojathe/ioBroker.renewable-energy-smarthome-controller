@@ -1,5 +1,6 @@
 import { RenewableEnergySmarthomeController } from '../main';
 import { createObjectNum } from './dp-handler';
+import { getStateAsNumber } from './util/state-util';
 
 // TODO instance number and other values configurable
 const customInflux = {
@@ -107,7 +108,7 @@ export class AverageValue {
 	}
 
 	private async getValue(xid: string): Promise<number> {
-		const value = (await this.adapter.getStateAsync(xid))!.val as number;
+		const value = await getStateAsNumber(this.adapter, xid);
 
 		if (!value) {
 			console.error(`Could not retrieve value for ${xid}`);

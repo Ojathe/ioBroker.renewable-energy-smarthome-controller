@@ -142,6 +142,8 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
 				{this.renderInput('optionSourceIsGridBuying', 'optionSourceIsGridBuying', 'text')}
 				<br />
 				{this.renderInput('optionSourceIsGridLoad', 'optionSourceIsGridLoad', 'text')}
+				<br />
+				{/* {this.renderInput('optionEnergyManagementActive', 'optionEnergyManagementActive', 'boolean')} */}
 			</form>
 		);
 	}
