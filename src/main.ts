@@ -6,7 +6,18 @@
 // you need to create an adapter
 import * as utils from '@iobroker/adapter-core';
 import { AverageValueHandler } from './lib/average-value-handler';
-import { createObjects } from './lib/dp-handler';
+import {
+	addSubscriptions,
+	createObjects,
+	XID_INGOING_BATTERY_SOC,
+	XID_INGOING_GRID_LOAD,
+	XID_INGOING_IS_GRID_BUYING,
+	XID_INGOING_PV_GENERATION,
+	XID_INGOING_SOLAR_RADIATION,
+	XID_INGOING_TOTAL_LOAD,
+} from './lib/dp-handler';
+
+import { scheduleJob } from 'node-schedule';
 
 // Load your modules here, e.g.:
 // import * as fs from "fs";
@@ -35,19 +46,21 @@ export class RenewableEnergySmarthomeController extends utils.Adapter {
 		// Initialize your adapter here
 
 		// The adapters config (in the instance object everything under the attribute "native") is accessible via
-		// this.config:
-		this.log.info('config option1: ' + this.config.option1);
-		this.log.info('config option2: ' + this.config.option2);
+		// TODO make sure that adapter will be restarted after config change
+		this.log.debug('config ' + this.config);
 
 		createObjects(this);
+
+		addSubscriptions(this, this.config);
+
 		this.avgValueHandler = new AverageValueHandler(this);
 
-		// examples for the checkPassword/checkGroup functions
-		let result = await this.checkPasswordAsync('admin', 'iobroker');
-		this.log.info('check user admin pw iobroker: ' + result);
-
-		result = await this.checkGroupAsync('admin', 'admin');
-		this.log.info('check group user admin group admin: ' + result);
+		// calculating average Values
+		// TODO make interval configurable
+		scheduleJob('*/20 * * * * *', () => {
+			console.log('calculating average Values');
+			this.avgValueHandler!.calculate();
+		});
 	}
 
 	/**
@@ -89,12 +102,42 @@ export class RenewableEnergySmarthomeController extends utils.Adapter {
 		if (state) {
 			// The state was changed
 			this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+
+			this.updateIngoingDatapoints(id, state);
 		} else {
 			// The state was deleted
 			this.log.info(`state ${id} deleted`);
 		}
 	}
 
+	private updateIngoingDatapoints(id: string, state: ioBroker.State) {
+		let xidtoUpdate = '';
+		switch (id) {
+			case this.config.optionSourcePvGeneration:
+				xidtoUpdate = XID_INGOING_PV_GENERATION;
+				break;
+			case this.config.optionSourceBatterySoc:
+				xidtoUpdate = XID_INGOING_BATTERY_SOC;
+				break;
+			case this.config.optionSourceIsGridBuying:
+				xidtoUpdate = XID_INGOING_IS_GRID_BUYING;
+				break;
+			case this.config.optionSourceIsGridLoad:
+				xidtoUpdate = XID_INGOING_GRID_LOAD;
+				break;
+			case this.config.optionSourceSolarRadiation:
+				xidtoUpdate = XID_INGOING_SOLAR_RADIATION;
+				break;
+			case this.config.optionSourceTotalLoad:
+				xidtoUpdate = XID_INGOING_TOTAL_LOAD;
+				break;
+		}
+
+		if (xidtoUpdate.length > 0) {
+			this.setState(xidtoUpdate, state.val);
+			console.log(`Updating ingoing-value '${xidtoUpdate}' from '${id}' with '${state.val}'`);
+		}
+	}
 	// If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
 	// /**
 	//  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...

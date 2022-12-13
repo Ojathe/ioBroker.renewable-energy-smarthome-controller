@@ -123,3 +123,13 @@ export const createObjects = async (adapter: RenewableEnergySmarthomeController)
 		desc: 'Batteries SoC when the last Bonus was detected',
 	});
 };
+
+export const addSubscriptions = (adapter: ioBroker.Adapter, config: ioBroker.AdapterConfig): void => {
+	adapter.subscribeForeignStates(config.optionSourcePvGeneration);
+	adapter.subscribeForeignStates(config.optionSourceTotalLoad);
+	adapter.subscribeForeignStates(config.optionSourceBatterySoc);
+	adapter.subscribeForeignStates(config.optionSourceSolarRadiation);
+	adapter.subscribeForeignStates(config.optionSourceIsGridBuying);
+	adapter.subscribeForeignStates(config.optionSourceIsGridLoad);
+	console.log('Added subscriptions.');
+};
