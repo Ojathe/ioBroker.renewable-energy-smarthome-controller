@@ -7,14 +7,20 @@ export const getStateAsNumber = async (
 	const state = await adapter.getStateAsync(`${adapter.name}.${adapter.instance}.` + xid);
 
 	if (!state) {
+		console.log(
+			`Result is undefined: 'await adapter.getStateAsync(${adapter.name}.${adapter.instance}. + ${xid})'`,
+		);
 		return undefined;
 	}
 
-	if (typeof state.val == 'number') {
-		return state.val as number;
+	if (typeof state.val !== 'number') {
+		console.log(
+			`Result is not a number: 'await adapter.getStateAsync(${adapter.name}.${adapter.instance}. + ${xid})'`,
+		);
+		return undefined;
 	}
 
-	return undefined;
+	return state.val;
 };
 
 export const getStateAsBoolean = async (
@@ -32,4 +38,20 @@ export const getStateAsBoolean = async (
 	}
 
 	return undefined;
+};
+
+export const setStateAsBoolean = async (
+	adapter: RenewableEnergySmarthomeController,
+	xid: string,
+	value: boolean,
+): Promise<void> => {
+	await adapter.setStateAsync(xid, { val: value, ack: true });
+};
+
+export const setStateAsNumber = async (
+	adapter: RenewableEnergySmarthomeController,
+	xid: string,
+	value: number,
+): Promise<void> => {
+	await adapter.setStateAsync(xid, { val: value, ack: true });
 };

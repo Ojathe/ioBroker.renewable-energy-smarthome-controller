@@ -9,5 +9,7 @@
     "optionSourceBatterySoc": "optieBronBatterijSoc",
     "optionSourceSolarRadiation": "optieBronZonnestraling",
     "optionSourceIsGridBuying": "optieBronIsGridBuying",
-    "optionSourceIsGridLoad": "optieBronIsGridLoad"
+    "optionSourceIsGridLoad": "optieBronIsGridLoad",
+    "optionEnergyManagementActive": "optieEnergieManagementActief",
+    "optionSourceBatteryLoad": "optieSourceBatteryLoad"
 }

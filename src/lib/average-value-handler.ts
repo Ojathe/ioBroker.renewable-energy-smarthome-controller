@@ -1,6 +1,7 @@
 import { RenewableEnergySmarthomeController } from '../main';
 import { AverageValue } from './average-value';
 import {
+	XID_INGOING_BAT_LOAD,
 	XID_INGOING_GRID_LOAD,
 	XID_INGOING_IS_GRID_BUYING,
 	XID_INGOING_PV_GENERATION,
@@ -14,6 +15,7 @@ export class AverageValueHandler {
 	public readonly powerPv: AverageValue;
 	public readonly powerDif: AverageValue;
 	public readonly powerGrid: AverageValue;
+	public readonly batLoad: AverageValue;
 
 	constructor(private adapter: RenewableEnergySmarthomeController) {
 		this.solar = new AverageValue(adapter, 'solar-radiation', {
@@ -25,6 +27,12 @@ export class AverageValueHandler {
 		this.powerPv = new AverageValue(adapter, 'power-pv', {
 			desc: 'PV generation',
 			xidSource: XID_INGOING_PV_GENERATION,
+			unit: 'kW',
+		});
+
+		this.batLoad = new AverageValue(adapter, 'bat-load', {
+			desc: 'The Battery load (-) consuming / (+) charging',
+			xidSource: XID_INGOING_BAT_LOAD,
 			unit: 'kW',
 		});
 
@@ -84,13 +92,13 @@ export class AverageValueHandler {
 	private async calculateAvgValue(xidSource: string, xidTarget: string, durationInMinutes: number): Promise<void> {
 		const end = Date.now();
 
-		console.log(`fetching history for '${xidSource}' `);
+		//console.log(`fetching history for '${xidSource}' `);
 
 		this.adapter.sendTo(
 			'history.0',
 			'getHistory',
 			{
-				id: `${this.adapter.name}.${this.adapter.instance}.avg.power-dif.current`,
+				id: `${this.adapter.name}.${this.adapter.instance}.${xidSource}`,
 				options: {
 					start: end - 60 * 1000 * durationInMinutes,
 					end: end,
@@ -128,7 +136,8 @@ export class AverageValueHandler {
 					`'${xidSource}': Durchschnitt der letzten ${durationInMinutes} Minuten: ${sum}/${count} ${avgVal}`,
 				);
 
-				this.adapter.setState(xidTarget, avgVal);
+				console.log(`Updating Average Value ( ${avgVal} ) with xid: ` + xidTarget);
+				this.adapter.setState(xidTarget, { val: avgVal, ack: true });
 			},
 		);
 	}

@@ -14,6 +14,7 @@ declare global {
 			optionSourceSolarRadiation: string;
 			optionSourceIsGridBuying: string;
 			optionSourceIsGridLoad: string;
+			optionSourceBatteryLoad: string;
 		}
 	}
 }

@@ -91,7 +91,8 @@
         "optionSourceBatterySoc": "lg-ess-home.0.user.essinfo.common.BATT.soc",
         "optionSourceSolarRadiation": "weatherunderground.0.forecast.current.solarRadiation",
         "optionSourceIsGridBuying": "lg-ess-home.0.user.essinfo.home.direction.is_grid_buying_",
-        "optionSourceIsGridLoad": "lg-ess-home.0.user.essinfo.common.GRID.active_power"
+        "optionSourceIsGridLoad": "lg-ess-home.0.user.essinfo.common.GRID.active_power",
+        "optionSourceBatteryLoad": "lg-ess-home.0.user.essinfo.common.BATT.dc_power"
     },
     "objects": [],
     "instanceObjects": []

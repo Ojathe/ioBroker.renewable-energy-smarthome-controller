@@ -8,5 +8,6 @@
     "optionSourceBatterySoc": "OptionSourceBatterySoc",
     "optionSourceSolarRadiation": "OptionSourceSolarRadiation",
     "optionSourceIsGridBuying": "optionSourceIsGridBuying",
-    "optionSourceIsGridLoad": "optionSourceIsGridLoad"
+    "optionSourceIsGridLoad": "optionSourceIsGridLoad",
+    "optionSourceBatteryLoad": "optionSourceBatteryLoad"
 }

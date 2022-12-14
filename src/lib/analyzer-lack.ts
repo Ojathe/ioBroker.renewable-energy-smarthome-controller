@@ -1,6 +1,6 @@
 import { RenewableEnergySmarthomeController } from '../main';
 import { AverageValueHandler } from './average-value-handler';
-import { XID_EEG_STATE_LOSS, XID_INGOING_BATTERY_SOC } from './dp-handler';
+import { XID_EEG_STATE_LOSS, XID_INGOING_BAT_SOC } from './dp-handler';
 
 export class AnalyzerLack {
 	constructor(private adapter: RenewableEnergySmarthomeController, private avgValueHandler: AverageValueHandler) {}
@@ -21,7 +21,8 @@ export class AnalyzerLack {
 		const powerDif = await this.avgValueHandler.powerDif.getCurrent();
 		const powerDifAvg = await this.avgValueHandler.powerDif.get10Min();
 		const powerDifAvg5 = await this.avgValueHandler.powerDif.get5Min();
-		const batSoc = (await this.adapter.getStateAsync(XID_INGOING_BATTERY_SOC))!.val ?? 0;
+		const gridPowerAvg5 = await this.avgValueHandler.powerGrid.get5Min();
+		const batSoc = (await this.adapter.getStateAsync(XID_INGOING_BAT_SOC))!.val ?? 0;
 
 		// TODO PV Connection
 		// Mangel, wenn
@@ -53,12 +54,15 @@ export class AnalyzerLack {
 			powerLack = true;
 		}
 
-		// TODO BatteryPower
-
 		// report the lack only if is solid (5 or 10 Minutes depending on current state)
-		const powerLackEffective = powerLack ? powerDifAvg5 < this.threshold : powerDifAvg < this.threshold;
+		let powerLackEffective = powerLack ? powerDifAvg5 < this.threshold : powerDifAvg < this.threshold;
 
-		const msg = `LackAnalysis # Lack PowerDif=${powerDif} PowerDifAvg=${powerDifAvg} => EffectiveLack:${powerLackEffective} SOC=${batSoc}`;
+		// Mangel forcen, wenn vom Stromnetz genommen wird
+		if (gridPowerAvg5 < -0.2) {
+			powerLackEffective = true;
+		}
+
+		const msg = `LackAnalysis # Lack PowerDif=${powerDif}, PowerDifAvg=${powerDifAvg}, GridPowerAvg5=${gridPowerAvg5} => EffectiveLack:${powerLackEffective} SOC=${batSoc}`;
 		const reportedLack: boolean = ((await this.adapter.getStateAsync(XID_EEG_STATE_LOSS))!.val as boolean) ?? false;
 
 		if (powerLackEffective && !reportedLack) {

@@ -1,6 +1,6 @@
 import { RenewableEnergySmarthomeController } from '../main';
 import { AverageValueHandler } from './average-value-handler';
-import { XID_EEG_STATE_BONUS, XID_EEG_STATE_SOC_LAST_BONUS, XID_INGOING_BATTERY_SOC } from './dp-handler';
+import { XID_EEG_STATE_BONUS, XID_EEG_STATE_SOC_LAST_BONUS, XID_INGOING_BAT_SOC } from './dp-handler';
 
 export class AnalyzerBonus {
 	// TODO move to config
@@ -31,7 +31,7 @@ export class AnalyzerBonus {
 
 		// there is no bonus, if not or to less selling to grid while the battery is low
 		const gridPowerAvg = await this.avgValueHandler.powerGrid.get10Min();
-		const batSoc = (await this.adapter.getStateAsync(XID_INGOING_BATTERY_SOC))!.val ?? 0;
+		const batSoc = (await this.adapter.getStateAsync(XID_INGOING_BAT_SOC))!.val ?? 0;
 		if (!(gridPowerAvg > this.sellingThreshold) && batSoc < 10) {
 			powerBonus = false;
 		}
@@ -57,7 +57,7 @@ export class AnalyzerBonus {
 
 	private async UpdateBatSoc(powerBonus: boolean): Promise<void> {
 		const currentBatSocLastBonus = (await this.adapter.getStateAsync(XID_EEG_STATE_SOC_LAST_BONUS))!.val ?? 0;
-		const currentBatSoc = (await this.adapter.getStateAsync(XID_INGOING_BATTERY_SOC))!.val ?? 0;
+		const currentBatSoc = (await this.adapter.getStateAsync(XID_INGOING_BAT_SOC))!.val ?? 0;
 
 		if (powerBonus || currentBatSoc > currentBatSocLastBonus) {
 			await this.adapter.setStateAsync(XID_EEG_STATE_SOC_LAST_BONUS, currentBatSoc);

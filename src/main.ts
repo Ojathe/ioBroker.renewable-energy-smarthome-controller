@@ -9,7 +9,9 @@ import { AverageValueHandler } from './lib/average-value-handler';
 import {
 	addSubscriptions,
 	createObjects,
-	XID_INGOING_BATTERY_SOC,
+	XID_EEG_STATE_OPERATION,
+	XID_INGOING_BAT_LOAD,
+	XID_INGOING_BAT_SOC,
 	XID_INGOING_GRID_LOAD,
 	XID_INGOING_IS_GRID_BUYING,
 	XID_INGOING_PV_GENERATION,
@@ -20,6 +22,7 @@ import {
 import { scheduleJob } from 'node-schedule';
 import { AnalyzerBonus } from './lib/analyzer-bonus';
 import { AnalyzerLack } from './lib/analyzer-lack';
+import { setStateAsBoolean } from './lib/util/state-util';
 
 // Load your modules here, e.g.:
 // import * as fs from "fs";
@@ -56,6 +59,8 @@ export class RenewableEnergySmarthomeController extends utils.Adapter {
 		createObjects(this);
 
 		addSubscriptions(this, this.config);
+
+		setStateAsBoolean(this, XID_EEG_STATE_OPERATION, this.config.optionEnergyManagementActive);
 
 		this.avgValueHandler = new AverageValueHandler(this);
 		this.analyzerBonus = new AnalyzerBonus(this, this.avgValueHandler);
@@ -113,7 +118,7 @@ export class RenewableEnergySmarthomeController extends utils.Adapter {
 	private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
 		if (state) {
 			// The state was changed
-			this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+			//this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
 
 			this.updateIngoingDatapoints(id, state);
 		} else {
@@ -129,7 +134,7 @@ export class RenewableEnergySmarthomeController extends utils.Adapter {
 				xidtoUpdate = XID_INGOING_PV_GENERATION;
 				break;
 			case this.config.optionSourceBatterySoc:
-				xidtoUpdate = XID_INGOING_BATTERY_SOC;
+				xidtoUpdate = XID_INGOING_BAT_SOC;
 				break;
 			case this.config.optionSourceIsGridBuying:
 				xidtoUpdate = XID_INGOING_IS_GRID_BUYING;
@@ -143,10 +148,13 @@ export class RenewableEnergySmarthomeController extends utils.Adapter {
 			case this.config.optionSourceTotalLoad:
 				xidtoUpdate = XID_INGOING_TOTAL_LOAD;
 				break;
+			case this.config.optionSourceBatteryLoad:
+				xidtoUpdate = XID_INGOING_BAT_LOAD;
+				break;
 		}
 
 		if (xidtoUpdate.length > 0) {
-			this.setState(xidtoUpdate, state.val);
+			this.setState(xidtoUpdate, { val: state.val, ack: true });
 			console.log(`Updating ingoing-value '${xidtoUpdate}' from '${id}' with '${state.val}'`);
 		}
 	}

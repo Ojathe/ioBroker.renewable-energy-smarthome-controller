@@ -7,5 +7,7 @@
     "optionSourceBatterySoc": "параметр SourceBatterySoc",
     "optionSourceSolarRadiation": "параметр SourceSolarRadiation",
     "optionSourceIsGridBuying": "optionSourceIsGridBuying",
-    "optionSourceIsGridLoad": "optionSourceIsGridLoad"
+    "optionSourceIsGridLoad": "optionSourceIsGridLoad",
+    "optionEnergyManagementActive": "optionEnergyManagementActive",
+    "optionSourceBatteryLoad": "optionSourceBatteryLoad"
 }
