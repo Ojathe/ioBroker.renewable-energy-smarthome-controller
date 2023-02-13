@@ -129,9 +129,23 @@ class Settings extends React.Component<SettingsProps, SettingsState> {
 	render() {
 		return (
 			<form className={this.props.classes.tab}>
-				{this.renderCheckbox('option1', 'option1')}
+				{/* {this.renderCheckbox('optionUseInfluxDb', 'optionUseInfluxDb')} */}
 				<br />
-				{this.renderInput('option2', 'option2', 'text')}
+				{this.renderInput('optionSourcePvGeneration', 'optionSourcePvGeneration', 'text')}
+				<br />
+				{this.renderInput('optionSourceTotalLoad', 'optionSourceTotalLoad', 'text')}
+				<br />
+				{this.renderInput('optionSourceBatterySoc', 'optionSourceBatterySoc', 'text')}
+				<br />
+				{this.renderInput('optionSourceSolarRadiation', 'optionSourceSolarRadiation', 'text')}
+				<br />
+				{this.renderInput('optionSourceIsGridBuying', 'optionSourceIsGridBuying', 'text')}
+				<br />
+				{this.renderInput('optionSourceIsGridLoad', 'optionSourceIsGridLoad', 'text')}
+				<br />
+				{this.renderInput('optionSourceBatteryLoad', 'optionSourceBatteryLoad', 'text')}
+				<br />
+				{this.renderInput('optionEnergyManagementActive', 'optionEnergyManagementActive', 'boolean')}
 			</form>
 		);
 	}

@@ -1,5 +1,15 @@
 {
-	"renewable-energy-smarthome-controller adapter settings": "renewable-energy-smarthome-controller的适配器设置",
-	"option1": "选项1",
-	"option2": "选项2"
+    "renewable-energy-smarthome-controller adapter settings": "renewable-energy-smarthome-controller的适配器设置",
+    "option1": "选项1",
+    "option2": "选项2",
+    "optionInstanceInfluxDb": "optionInstanceInfluxDb",
+    "optionInstanceHistory": "optionInstanceHistory",
+    "optionSourcePvGeneration": "选项SourcePvGeneration",
+    "optionSourceTotalLoad": "选项SourceTotalLoad",
+    "optionSourceBatterySoc": "optionSourceBatterySoc",
+    "optionSourceSolarRadiation": "选项SourceSolarRadiation",
+    "optionSourceIsGridBuying": "optionSourceIsGrid购买",
+    "optionSourceIsGridLoad": "选项SourceIsGridLoad",
+    "optionEnergyManagementActive": "选项能源管理活动",
+    "optionSourceBatteryLoad": "选项SourceBatteryLoad"
 }

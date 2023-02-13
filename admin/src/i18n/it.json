@@ -1,5 +1,15 @@
 {
-	"renewable-energy-smarthome-controller adapter settings": "Impostazioni dell'adattatore per renewable-energy-smarthome-controller",
-	"option1": "opzione 1",
-	"option2": "opzione 2"
+    "renewable-energy-smarthome-controller adapter settings": "Impostazioni dell'adattatore per renewable-energy-smarthome-controller",
+    "option1": "opzione 1",
+    "option2": "opzione 2",
+    "optionInstanceInfluxDb": "opzioneInstanceInfluxDb",
+    "optionInstanceHistory": "opzioneCronologia istanza",
+    "optionSourcePvGeneration": "optionSourcePvGeneration",
+    "optionSourceTotalLoad": "opzioneSourceTotalLoad",
+    "optionSourceBatterySoc": "opzioneSourceBatterySoc",
+    "optionSourceSolarRadiation": "opzioneSorgenteRadiazione Solare",
+    "optionSourceIsGridBuying": "optionSourceIsGridBuying",
+    "optionSourceIsGridLoad": "optionSourceIsGridLoad",
+    "optionEnergyManagementActive": "opzioneEnergyManagementActive",
+    "optionSourceBatteryLoad": "optionSourceBatteryLoad"
 }

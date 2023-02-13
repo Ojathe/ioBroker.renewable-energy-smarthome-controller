@@ -1,5 +1,6 @@
 import { RenewableEnergySmarthomeController } from '../main';
 import { createObjectNum } from './dp-handler';
+import { getStateAsNumber } from './util/state-util';
 
 // TODO instance number and other values configurable
 const customInflux = {
@@ -50,7 +51,7 @@ export class AverageValue {
 	public readonly mutation?: (number: number) => Promise<number>;
 
 	constructor(
-		context: RenewableEnergySmarthomeController,
+		private adapter: RenewableEnergySmarthomeController,
 		name: string,
 		props?: { xidSource?: string; desc?: string; unit?: string; mutation?: (number: number) => Promise<number> },
 	) {
@@ -58,14 +59,14 @@ export class AverageValue {
 		this.name = name;
 		this.desc = props?.desc;
 
-		this.xidCurrent = this.createStates(context, 'current', { unit: props?.unit, custom: customHistory });
-		this.xidAvg = this.createStates(context, 'last-10-min', {
+		this.xidCurrent = this.createStates(adapter, 'current', { unit: props?.unit, custom: customHistory });
+		this.xidAvg = this.createStates(adapter, 'last-10-min', {
 			descAddon: ' der letzten 10 Minuten',
 			unit: props?.unit,
 			custom: customInflux,
 		});
 
-		this.xidAvg5 = this.createStates(context, 'last-5-min', {
+		this.xidAvg5 = this.createStates(adapter, 'last-5-min', {
 			descAddon: ' der letzten 5 Minuten',
 			unit: props?.unit,
 		});
@@ -92,5 +93,33 @@ export class AverageValue {
 			custom: props?.custom,
 		});
 		return xid;
+	}
+
+	public async getCurrent(): Promise<number> {
+		return await this.getValue(this.xidCurrent);
+	}
+
+	public async get5Min(): Promise<number> {
+		return await this.getValue(this.xidAvg5);
+	}
+
+	public async get10Min(): Promise<number> {
+		return await this.getValue(this.xidAvg);
+	}
+
+	private async getValue(xid: string): Promise<number> {
+		const value = await getStateAsNumber(this.adapter, xid);
+
+		if (!value) {
+			console.error(`Could not retrieve value for ${xid}`);
+			return 0;
+		}
+
+		if (typeof value !== 'number') {
+			console.error(`Value '${value}' for ${xid} is not a number!`);
+			return 0;
+		}
+
+		return value;
 	}
 }

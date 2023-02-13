@@ -1,5 +1,13 @@
 {
 	"renewable-energy-smarthome-controller adapter settings": "Adapter settings for renewable-energy-smarthome-controller",
-	"option1": "option1",
-	"option2": "option2"
+	"optionInstanceInfluxDb": "optionInstanceInfluxDb",
+	"optionInstanceHistory": "optionInstanceHistory",
+	"optionEnergyManagementActive": "optionEnergyManagementActive",
+	"optionSourcePvGeneration": "optionSourcePvGeneration",
+	"optionSourceTotalLoad": "optionSourceTotalLoad",
+	"optionSourceBatterySoc": "OptionSourceBatterySoc",
+	"optionSourceSolarRadiation": "OptionSourceSolarRadiation",
+	"optionSourceIsGridBuying": "optionSourceIsGridBuying",
+	"optionSourceIsGridLoad": "optionSourceIsGridLoad",
+	"optionSourceBatteryLoad": "optionSourceBatteryLoad"
 }

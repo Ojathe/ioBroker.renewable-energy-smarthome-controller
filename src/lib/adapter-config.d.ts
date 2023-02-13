@@ -4,8 +4,17 @@
 declare global {
 	namespace ioBroker {
 		interface AdapterConfig {
-			option1: boolean;
-			option2: string;
+			optionUseInfluxDb: boolean;
+			optionInstanceInfluxDb: number;
+			optionInstanceHistory: number;
+			optionEnergyManagementActive: boolean;
+			optionSourcePvGeneration: string;
+			optionSourceTotalLoad: string;
+			optionSourceBatterySoc: string;
+			optionSourceSolarRadiation: string;
+			optionSourceIsGridBuying: string;
+			optionSourceIsGridLoad: string;
+			optionSourceBatteryLoad: string;
 		}
 	}
 }
