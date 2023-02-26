@@ -16,7 +16,7 @@ import {
 	XID_INGOING_IS_GRID_BUYING,
 	XID_INGOING_PV_GENERATION,
 	XID_INGOING_SOLAR_RADIATION,
-	XID_INGOING_TOTAL_LOAD,
+	XID_INGOING_TOTAL_LOAD
 } from './lib/dp-handler';
 
 import { scheduleJob } from 'node-schedule';
@@ -127,7 +127,7 @@ export class RenewableEnergySmarthomeController extends utils.Adapter {
 		}
 	}
 
-	private updateIngoingDatapoints(id: string, state: ioBroker.State) {
+	private updateIngoingDatapoints(id: string, state: ioBroker.State): void {
 		let xidtoUpdate = '';
 		switch (id) {
 			case this.config.optionSourcePvGeneration:
