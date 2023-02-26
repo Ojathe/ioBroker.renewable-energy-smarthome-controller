@@ -31,7 +31,7 @@ export class AnalyzerBonus {
 
 		// there is no bonus, if not or to less selling to grid while the battery is low
 		const gridPowerAvg = await this.avgValueHandler.powerGrid.get10Min();
-		const batSoc = (await this.adapter.getStateAsync(XID_INGOING_BAT_SOC))!.val ?? 0;
+		const batSoc = (await this.adapter.getStateAsync(XID_INGOING_BAT_SOC))?.val ?? 0;
 		if (!(gridPowerAvg > this.sellingThreshold) && batSoc < 10) {
 			powerBonus = false;
 		}
@@ -41,7 +41,7 @@ export class AnalyzerBonus {
 
 		const msg = `BonusAnalysis # Bonus PowerDif=${powerDif} PowerDifAvg=${powerDifAvg} => EffektiverBonus:${powerBonusEffective} SOC=${batSoc}`;
 		const reportedBonus: boolean =
-			((await this.adapter.getStateAsync(XID_EEG_STATE_BONUS))!.val as boolean) ?? false;
+			((await this.adapter.getStateAsync(XID_EEG_STATE_BONUS))?.val as boolean) ?? false;
 
 		if (powerBonusEffective && !reportedBonus) {
 			console.log(msg + ' || STATE CHANGED');
@@ -56,8 +56,8 @@ export class AnalyzerBonus {
 	}
 
 	private async UpdateBatSoc(powerBonus: boolean): Promise<void> {
-		const currentBatSocLastBonus = (await this.adapter.getStateAsync(XID_EEG_STATE_SOC_LAST_BONUS))!.val ?? 0;
-		const currentBatSoc = (await this.adapter.getStateAsync(XID_INGOING_BAT_SOC))!.val ?? 0;
+		const currentBatSocLastBonus = (await this.adapter.getStateAsync(XID_EEG_STATE_SOC_LAST_BONUS))?.val ?? 0;
+		const currentBatSoc = (await this.adapter.getStateAsync(XID_INGOING_BAT_SOC))?.val ?? 0;
 
 		if (powerBonus || currentBatSoc > currentBatSocLastBonus) {
 			await this.adapter.setStateAsync(XID_EEG_STATE_SOC_LAST_BONUS, currentBatSoc);

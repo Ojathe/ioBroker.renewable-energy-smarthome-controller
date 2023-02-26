@@ -22,7 +22,7 @@ export class AnalyzerLack {
 		const powerDifAvg = await this.avgValueHandler.powerDif.get10Min();
 		const powerDifAvg5 = await this.avgValueHandler.powerDif.get5Min();
 		const gridPowerAvg5 = await this.avgValueHandler.powerGrid.get5Min();
-		const batSoc = (await this.adapter.getStateAsync(XID_INGOING_BAT_SOC))!.val ?? 0;
+		const batSoc = (await this.adapter.getStateAsync(XID_INGOING_BAT_SOC))?.val ?? 0;
 
 		// TODO PV Connection
 		// Mangel, wenn
@@ -63,7 +63,7 @@ export class AnalyzerLack {
 		}
 
 		const msg = `LackAnalysis # Lack PowerDif=${powerDif}, PowerDifAvg=${powerDifAvg}, GridPowerAvg5=${gridPowerAvg5} => EffectiveLack:${powerLackEffective} SOC=${batSoc}`;
-		const reportedLack: boolean = ((await this.adapter.getStateAsync(XID_EEG_STATE_LOSS))!.val as boolean) ?? false;
+		const reportedLack: boolean = ((await this.adapter.getStateAsync(XID_EEG_STATE_LOSS))?.val as boolean) ?? false;
 
 		if (powerLackEffective && !reportedLack) {
 			console.log(msg + ' || STATE CHANGED');
