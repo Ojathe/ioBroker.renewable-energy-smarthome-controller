@@ -16,7 +16,7 @@ import {
 	XID_INGOING_IS_GRID_BUYING,
 	XID_INGOING_PV_GENERATION,
 	XID_INGOING_SOLAR_RADIATION,
-	XID_INGOING_TOTAL_LOAD
+	XID_INGOING_TOTAL_LOAD,
 } from '../dp-handler';
 
 const mockedPvGeneration = 'mockedPvGeneration';
@@ -50,7 +50,6 @@ tests.unit(path.join(__dirname, '..'), {
 	defineAdditionalTests() {
 		// Create mocks and asserts
 		const { adapter, database } = utils.unit.createMocks({});
-		const { assertStateExists } = utils.unit.createAsserts(database, adapter);
 
 		describe('dp-handler', () => {
 			afterEach(() => {
@@ -82,7 +81,7 @@ tests.unit(path.join(__dirname, '..'), {
 						expect(adapter.setObjectNotExistsAsync).to.calledWith(value);
 						expect(adapter.subscribeStates).to.calledWith(value);
 						expect(adapter.setStateAsync).to.calledWith(value);
-					},
+					}
 				);
 			});
 
@@ -101,7 +100,7 @@ tests.unit(path.join(__dirname, '..'), {
 					async (value: any) => {
 						addSubscriptions(adapter as unknown as AdapterInstance, mockedConfig);
 						expect(adapter.subscribeForeignStates).to.calledWith(value);
-					},
+					}
 				);
 			});
 		});
