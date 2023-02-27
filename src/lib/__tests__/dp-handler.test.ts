@@ -81,7 +81,7 @@ tests.unit(path.join(__dirname, '..'), {
 						expect(adapter.setObjectNotExistsAsync).to.calledWith(value);
 						expect(adapter.subscribeStates).to.calledWith(value);
 						expect(adapter.setStateAsync).to.calledWith(value);
-					}
+					},
 				);
 			});
 
@@ -100,7 +100,7 @@ tests.unit(path.join(__dirname, '..'), {
 					async (value: any) => {
 						addSubscriptions(adapter as unknown as AdapterInstance, mockedConfig);
 						expect(adapter.subscribeForeignStates).to.calledWith(value);
-					}
+					},
 				);
 			});
 		});
