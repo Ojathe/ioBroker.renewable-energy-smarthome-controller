@@ -1,9 +1,6 @@
-import { RenewableEnergySmarthomeController } from '../../main';
+import { AdapterInstance } from '@iobroker/adapter-core';
 
-export const getStateAsNumber = async (
-	adapter: RenewableEnergySmarthomeController,
-	xid: string,
-): Promise<number | undefined> => {
+export const getStateAsNumber = async (adapter: AdapterInstance, xid: string): Promise<number | undefined> => {
 	const state = await adapter.getStateAsync(`${adapter.name}.${adapter.instance}.` + xid);
 
 	if (!state) {
@@ -23,10 +20,7 @@ export const getStateAsNumber = async (
 	return state.val;
 };
 
-export const getStateAsBoolean = async (
-	adapter: RenewableEnergySmarthomeController,
-	xid: string,
-): Promise<boolean | undefined> => {
+export const getStateAsBoolean = async (adapter: AdapterInstance, xid: string): Promise<boolean | undefined> => {
 	const state = await adapter.getStateAsync(xid);
 
 	if (!state) {
@@ -40,18 +34,10 @@ export const getStateAsBoolean = async (
 	return undefined;
 };
 
-export const setStateAsBoolean = async (
-	adapter: RenewableEnergySmarthomeController,
-	xid: string,
-	value: boolean,
-): Promise<void> => {
+export const setStateAsBoolean = async (adapter: AdapterInstance, xid: string, value: boolean): Promise<void> => {
 	await adapter.setStateAsync(xid, { val: value, ack: true });
 };
 
-export const setStateAsNumber = async (
-	adapter: RenewableEnergySmarthomeController,
-	xid: string,
-	value: number,
-): Promise<void> => {
+export const setStateAsNumber = async (adapter: AdapterInstance, xid: string, value: number): Promise<void> => {
 	await adapter.setStateAsync(xid, { val: value, ack: true });
 };

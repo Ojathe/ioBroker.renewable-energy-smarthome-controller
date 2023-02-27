@@ -1,9 +1,9 @@
-import { RenewableEnergySmarthomeController } from '../main';
+import { AdapterInstance } from '@iobroker/adapter-core';
 import { AverageValueHandler } from './average-value-handler';
 import { XID_EEG_STATE_LOSS, XID_INGOING_BAT_SOC } from './dp-handler';
 
 export class AnalyzerLack {
-	constructor(private adapter: RenewableEnergySmarthomeController, private avgValueHandler: AverageValueHandler) {}
+	constructor(private adapter: AdapterInstance, private avgValueHandler: AverageValueHandler) {}
 
 	// TODO move to config
 	readonly threshold = -0.5;

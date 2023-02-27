@@ -1,4 +1,4 @@
-import { RenewableEnergySmarthomeController } from '../main';
+import { AdapterInstance } from '@iobroker/adapter-core';
 import { AverageValueHandler } from './average-value-handler';
 import { XID_EEG_STATE_BONUS, XID_EEG_STATE_SOC_LAST_BONUS, XID_INGOING_BAT_SOC } from './dp-handler';
 
@@ -7,7 +7,7 @@ export class AnalyzerBonus {
 	private readonly sellingThreshold: number = 0.5;
 	private readonly bonusReportThreshold: number = 0.3;
 
-	constructor(private adapter: RenewableEnergySmarthomeController, private avgValueHandler: AverageValueHandler) {}
+	constructor(private adapter: AdapterInstance, private avgValueHandler: AverageValueHandler) {}
 
 	public async run(): Promise<void> {
 		// TODO investigate on how to configure values

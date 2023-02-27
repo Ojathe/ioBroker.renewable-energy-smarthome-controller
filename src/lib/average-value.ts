@@ -1,4 +1,4 @@
-import { RenewableEnergySmarthomeController } from '../main';
+import { AdapterInstance } from '@iobroker/adapter-core';
 import { createObjectNum } from './dp-handler';
 import { getStateAsNumber } from './util/state-util';
 
@@ -51,7 +51,7 @@ export class AverageValue {
 	public readonly mutation?: (number: number) => Promise<number>;
 
 	constructor(
-		private adapter: RenewableEnergySmarthomeController,
+		private adapter: AdapterInstance,
 		name: string,
 		props?: { xidSource?: string; desc?: string; unit?: string; mutation?: (number: number) => Promise<number> },
 	) {
@@ -82,7 +82,7 @@ export class AverageValue {
 	}
 
 	private createStates(
-		context: RenewableEnergySmarthomeController,
+		context: AdapterInstance,
 		subItem: string,
 		props?: { descAddon?: string; unit?: string; custom?: Record<string, any> },
 	): string {

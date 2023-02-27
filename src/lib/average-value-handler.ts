@@ -1,4 +1,4 @@
-import { RenewableEnergySmarthomeController } from '../main';
+import { AdapterInstance } from '@iobroker/adapter-core';
 import { AverageValue } from './average-value';
 import {
 	XID_INGOING_BAT_LOAD,
@@ -17,7 +17,7 @@ export class AverageValueHandler {
 	public readonly powerGrid: AverageValue;
 	public readonly batLoad: AverageValue;
 
-	constructor(private adapter: RenewableEnergySmarthomeController) {
+	constructor(private adapter: AdapterInstance) {
 		this.solar = new AverageValue(adapter, 'solar-radiation', {
 			desc: 'Average solar radiation',
 			xidSource: XID_INGOING_SOLAR_RADIATION,
