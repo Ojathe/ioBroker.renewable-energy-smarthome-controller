@@ -11,32 +11,53 @@ import {
 import { getStateAsBoolean, getStateAsNumber } from './util/state-util';
 
 export class AverageValueHandler {
-	public readonly solar: AverageValue;
-	public readonly powerPv: AverageValue;
-	public readonly powerDif: AverageValue;
-	public readonly powerGrid: AverageValue;
-	public readonly batLoad: AverageValue;
+	private _solar: AverageValue | undefined;
+	public get solar(): AverageValue {
+		return this._solar!;
+	}
+	private _powerPv: AverageValue | undefined;
+	public get powerPv(): AverageValue {
+		return this._powerPv!;
+	}
+	private _powerDif: AverageValue | undefined;
+	public get powerDif(): AverageValue {
+		return this._powerDif!;
+	}
+	private _powerGrid: AverageValue | undefined;
+	public get powerGrid(): AverageValue {
+		return this._powerGrid!;
+	}
+	private _batLoad: AverageValue | undefined;
+	public get batLoad(): AverageValue {
+		return this._batLoad!;
+	}
 
-	constructor(private adapter: AdapterInstance) {
-		this.solar = new AverageValue(adapter, 'solar-radiation', {
+	private constructor(private adapter: AdapterInstance) {
+		// TODO BatteryPower (lg-ess-home.0.user.essinfo.common.BATT.dc_power)
+	}
+
+	static async build(adapter: AdapterInstance): Promise<AverageValueHandler> {
+		const val = new AverageValueHandler(adapter);
+
+		val._solar = await AverageValue.build(adapter, 'solar-radiation', {
 			desc: 'Average solar radiation',
 			xidSource: XID_INGOING_SOLAR_RADIATION,
 			unit: 'wm²',
 		});
 
-		this.powerPv = new AverageValue(adapter, 'power-pv', {
+		val._powerPv = await AverageValue.build(adapter, 'power-pv', {
 			desc: 'PV generation',
 			xidSource: XID_INGOING_PV_GENERATION,
 			unit: 'kW',
 		});
 
-		this.batLoad = new AverageValue(adapter, 'bat-load', {
+		val._batLoad = await AverageValue.build(adapter, 'bat-load', {
 			desc: 'The Battery load (-) consuming / (+) charging',
 			xidSource: XID_INGOING_BAT_LOAD,
 			unit: 'kW',
 		});
 
-		this.powerDif = new AverageValue(adapter, 'power-dif', {
+		val._powerDif = await AverageValue.build(adapter, 'power-dif', {
 			desc: 'difference of energy over generation (+) and loss consumption(-)',
 			async mutation(_val: number) {
 				const load = await getStateAsNumber(adapter, XID_INGOING_TOTAL_LOAD);
@@ -54,7 +75,7 @@ export class AverageValueHandler {
 			},
 		});
 
-		this.powerGrid = new AverageValue(adapter, 'power-grid', {
+		val._powerGrid = await AverageValue.build(adapter, 'power-grid', {
 			desc: 'amount of generation(+) or buying(-) of energy',
 			xidSource: XID_INGOING_GRID_LOAD,
 			async mutation(val: number) {
@@ -63,7 +84,7 @@ export class AverageValueHandler {
 			},
 		});
 
-		// TODO BatteryPower (lg-ess-home.0.user.essinfo.common.BATT.dc_power)
+		return val;
 	}
 
 	public async calculate(): Promise<void> {
