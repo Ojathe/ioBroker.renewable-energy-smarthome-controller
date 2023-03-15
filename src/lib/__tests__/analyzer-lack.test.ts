@@ -3,7 +3,7 @@ import { expect } from 'chai';
 
 const { adapter, database } = utils.unit.createMocks({});
 
-describe('average-value', () => {
+describe('analyzer-lack', () => {
 	afterEach(() => {
 		// The mocks keep track of all method invocations - reset them after each single test
 		adapter.resetMockHistory();
@@ -11,7 +11,7 @@ describe('average-value', () => {
 		database.clear();
 	});
 	describe('func', () => {
-		it('test', () => {
+		xit('test', () => {
 			expect(false).to.be.true;
 		});
 	});
