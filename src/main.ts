@@ -62,7 +62,7 @@ export class RenewableEnergySmarthomeController extends utils.Adapter {
 
 		setStateAsBoolean(this, XID_EEG_STATE_OPERATION, this.config.optionEnergyManagementActive);
 
-		this.avgValueHandler = new AverageValueHandler(this);
+		this.avgValueHandler = await AverageValueHandler.build(this);
 		this.analyzerBonus = new AnalyzerBonus(this, this.avgValueHandler);
 		this.analyzerLack = new AnalyzerLack(this, this.avgValueHandler);
 
