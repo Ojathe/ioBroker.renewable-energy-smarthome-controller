@@ -24,93 +24,108 @@ describe('average-value.handler', () => {
 	};
 
 	describe('build()', () => {
-		const initBuildStub = (sandbox: sinon.SinonSandbox) => {
-			return sandbox.stub(AverageValue, 'build').returns('mock' as unknown as Promise<AverageValue>);
-		};
+		const testCases = [
+			[
+				'solar-radiation',
+				{
+					desc: 'Average solar radiation',
+					xidSource: XID_INGOING_SOLAR_RADIATION,
+					unit: 'wm²',
+				},
+			],
+			[
+				'power-pv',
+				{
+					desc: 'PV generation',
+					xidSource: XID_INGOING_PV_GENERATION,
+					unit: 'kW',
+				},
+			],
+			[
+				'bat-load',
+				{
+					desc: 'The Battery load (-) consuming / (+) charging',
+					xidSource: XID_INGOING_BAT_LOAD,
+					unit: 'kW',
+				},
+			],
+			['power-dif'],
+			['power-grid'],
+		];
 
-		it('should create avg-value for solar-radiation ', async () => {
-			// Arrange & Act
-			const avgValueStub = initBuildStub(sandbox);
-			const handler = await initHandler();
+		testCases.forEach((testCase) => {
+			it(`should create avg-value for ${testCase[0]} `, async () => {
+				// Arrange & Act
+				const avgValueStub = sandbox
+					.stub(AverageValue, 'build')
+					.returns('mock' as unknown as Promise<AverageValue>);
+				const handler = await initHandler();
 
-			//Assert
-			expect(handler).not.to.be.undefined;
-			expect(avgValueStub).to.be.calledWith(adapter, 'solar-radiation', {
-				desc: 'Average solar radiation',
-				xidSource: XID_INGOING_SOLAR_RADIATION,
-				unit: 'wm²',
+				//Assert
+				expect(handler).not.to.be.undefined;
+				expect(avgValueStub).to.be.calledWith(adapter, ...testCase);
 			});
-		});
-
-		it('should create avg-value for power-pv ', async () => {
-			// Arrange & Act
-			const avgValueStub = initBuildStub(sandbox);
-			const handler = await initHandler();
-
-			//Assert
-			expect(handler).not.to.be.undefined;
-			expect(avgValueStub).to.be.calledWith(adapter, 'power-pv', {
-				desc: 'PV generation',
-				xidSource: XID_INGOING_PV_GENERATION,
-				unit: 'kW',
-			});
-		});
-
-		it('should create avg-value for bat-load ', async () => {
-			// Arrange & Act
-			const avgValueStub = initBuildStub(sandbox);
-			const handler = await initHandler();
-
-			//Assert
-			expect(handler).not.to.be.undefined;
-			expect(avgValueStub).to.be.calledWith(adapter, 'bat-load', {
-				desc: 'The Battery load (-) consuming / (+) charging',
-				xidSource: XID_INGOING_BAT_LOAD,
-				unit: 'kW',
-			});
-		});
-
-		it('should create avg-value for power-dif ', async () => {
-			// Arrange & Act
-			const avgValueStub = initBuildStub(sandbox);
-			const handler = await initHandler();
-
-			//Assert
-			expect(handler).not.to.be.undefined;
-			expect(avgValueStub).to.be.calledWith(adapter, 'power-dif');
-		});
-
-		it('should create avg-value for power-grid ', async () => {
-			// Arrange & Act
-			const stub = initBuildStub(sandbox);
-			const handler = await initHandler();
-
-			expect(handler).not.to.be.undefined;
-			expect(stub).to.be.calledWith(adapter, 'power-grid');
 		});
 	});
 
 	describe('calculate()', () => {
-		it('should call sendTo (history) 8 times', async () => {
-			//Arrange
-			const handler = await initHandler();
+		const testCases = [
+			{ selector: (handler: AverageValueHandler) => handler.powerDif, name: 'powerDif' },
+			{ selector: (handler: AverageValueHandler) => handler.powerGrid, name: 'powerGrid' },
+			{ selector: (handler: AverageValueHandler) => handler.powerPv, name: 'powerPv' },
+			{ selector: (handler: AverageValueHandler) => handler.solar, name: 'solar' },
+		];
 
-			//Act
-			await handler.calculate();
+		describe('history access', async () => {
+			testCases.forEach((testCase) => {
+				it(`should call getHistory for ${testCase.name} current`, async () => {
+					//Arrange
+					const handler = await initHandler();
 
-			//Assert
-			expect(adapter.sendTo).to.be.callCount(8);
+					//Act
+					await handler.calculate();
+
+					//Assert
+					expect(adapter.sendToAsync).to.be.calledWith(
+						'history.0',
+						'getHistory',
+						sinon.match({
+							id: `${adapter.name}.${adapter.instance}.${testCase.selector(handler).xidCurrent}`,
+						}),
+					);
+				});
+			});
 		});
 
-		it('should call calculateItem with powerDif', async () => {
-			//Arrange
-			const handler = await initHandler();
+		describe('state update', async () => {
+			const mockedHistory = [
+				{ ts: Date.now(), val: 20 },
+				{ ts: Date.now() - 4 * 1000 * 60, val: 10 },
+				{ ts: Date.now() - 8 * 1000 * 60, val: 5 },
+			];
 
-			//Act
-			await handler.calculate();
+			testCases.forEach(async (testCase) => {
+				it(`_ should call setState 3 times for ${testCase.name}`, async () => {
+					//Arrange
+					const handler = await initHandler();
+					const avgVal = testCase.selector(handler);
+					adapter.sendToAsync.resolves({ result: mockedHistory });
 
-			//Assert
-			expect(adapter.sendTo).to.be.calledWith('history.0', 'getHistory');
+					//Act
+					await handler.calculate();
+
+					//Assert
+					expect(adapter.setStateAsync).to.be.calledWith(avgVal.xidCurrent, { val: 0, ack: true });
+					expect(adapter.setStateAsync).to.be.calledWith(avgVal.xidAvg, {
+						val: (20 + 10 + 5) / 3,
+						ack: true,
+					});
+					expect(adapter.setStateAsync).to.be.calledWith(avgVal.xidAvg5, {
+						val: (20 + 10) / 2,
+						ack: true,
+					});
+				});
+			});
 		});
 	});
 

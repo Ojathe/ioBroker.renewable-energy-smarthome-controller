@@ -106,67 +106,52 @@ export class AverageValueHandler {
 		}
 
 		await this.adapter.setStateAsync(item.xidCurrent, sourceVal);
-		await this.calculateAvgValue(item.xidCurrent, item.xidAvg, 10);
-		await this.calculateAvgValue(item.xidCurrent, item.xidAvg5, 5);
-	}
 
-	private async calculateAvgValue(xidSource: string, xidTarget: string, durationInMinutes: number): Promise<void> {
-		const end = Date.now();
+		try {
+			const end = Date.now();
+			const start10Min = end - 60 * 1000 * 10;
+			const start5Min = end - 60 * 1000 * 5;
 
-		//console.log(`fetching history for '${xidSource}' `);
-
-		this.adapter.sendTo(
-			'history.0',
-			'getHistory',
-			{
-				id: `${this.adapter.name}.${this.adapter.instance}.${xidSource}`,
+			const result = await this.adapter.sendToAsync('history.0', 'getHistory', {
+				id: `${this.adapter.name}.${this.adapter.instance}.${item.xidCurrent}`,
 				options: {
-					start: end - 60 * 1000 * durationInMinutes,
+					start: start10Min,
 					end: end,
 					aggregate: 'none',
 				},
-			},
-			(callback) => {
-				if (!callback) {
-					console.log('The sendTo call did not respond a message');
-					return;
-				}
+			});
 
-				const { result, error } = callback as unknown as {
-					result: Array<{ val: number; ts: number }>;
-					step: any;
-					error: any;
-				};
+			const values = (result as unknown as any).result as { val: number; ts: number }[];
 
-				if (error) {
-					console.error(`calculateAvgValue(${xidSource},${xidTarget},${durationInMinutes}) # ${error}`);
-					return;
-				}
+			console.log('sendToAsync result', result);
 
-				const relValues = result.filter((item) => {
-					return item.val > 0;
-				});
+			await this.calculateAvgValue(values, item.xidAvg);
+			await this.calculateAvgValue(values, item.xidAvg5, start5Min);
+		} catch (error) {
+			console.error(`calculateAvgValue(${item.getCurrent}) # ${error}`);
+		}
+	}
 
-				const { sum, count, avg } = calculateAverageValue(relValues);
+	private async calculateAvgValue(
+		values: { val: number; ts: number }[],
+		xidTarget: string,
+		startInMs = 0,
+	): Promise<void> {
+		values = values.filter((item) => item.val > 0 && item.ts >= startInMs);
 
-				console.log(
-					`'${xidSource}': Durchschnitt der letzten ${durationInMinutes} Minuten: ${sum}/${count} ${avg}`,
-				);
-
-				console.log(`Updating Average Value ( ${avg} ) with xid: ` + xidTarget);
-				this.adapter.setState(xidTarget, { val: avg, ack: true });
-			},
-		);
+		const { sum, count, avg } = calculateAverageValue(values);
+		console.log(`Updating Average Value ( ${avg} ) (sum: ${sum}, count: ${count}) with xid: ` + xidTarget);
+		this.adapter.setStateAsync(xidTarget, { val: avg, ack: true });
 	}
 }
 
-export function calculateAverageValue(relValues: { val: number; ts: number }[]): {
+export function calculateAverageValue(values: { val: number; ts: number }[]): {
 	sum: number;
 	count: number;
 	avg: number;
 } {
-	const sum = relValues.map((item) => item.val).reduce((prev, curr) => prev + curr, 0);
-	const count = relValues.length != 0 ? relValues.length : 0;
+	const sum = values.map((item) => item.val).reduce((prev, curr) => prev + curr, 0);
+	const count = values.length != 0 ? values.length : 0;
 	const avg = sum / (count > 0 ? count : 1);
 	return { sum, count, avg };
 }
