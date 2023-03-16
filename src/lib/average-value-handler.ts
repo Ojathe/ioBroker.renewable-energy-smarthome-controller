@@ -32,9 +32,7 @@ export class AverageValueHandler {
 		return this._batLoad!;
 	}
 
-	private constructor(private adapter: AdapterInstance) {
-		// TODO BatteryPower (lg-ess-home.0.user.essinfo.common.BATT.dc_power)
-	}
+	private constructor(private adapter: AdapterInstance) {}
 
 	static async build(adapter: AdapterInstance): Promise<AverageValueHandler> {
 		const val = new AverageValueHandler(adapter);
@@ -83,6 +81,8 @@ export class AverageValueHandler {
 				return val * (isGridBuying ? -1 : 1);
 			},
 		});
+
+		// TODO BatteryPower (lg-ess-home.0.user.essinfo.common.BATT.dc_power)
 
 		return val;
 	}
@@ -138,8 +138,6 @@ export class AverageValueHandler {
 					error: any;
 				};
 
-				//console.log('Deconstructed Result', result);
-
 				if (error) {
 					console.error(`calculateAvgValue(${xidSource},${xidTarget},${durationInMinutes}) # ${error}`);
 					return;
@@ -149,17 +147,26 @@ export class AverageValueHandler {
 					return item.val > 0;
 				});
 
-				const sum = relValues.map((item) => item.val).reduce((prev, curr) => prev + curr, 0);
-				const count = relValues.length != 0 ? relValues.length : 1;
-				const avgVal = sum / (count > 0 ? count : 1);
+				const { sum, count, avg } = calculateAverageValue(relValues);
 
 				console.log(
-					`'${xidSource}': Durchschnitt der letzten ${durationInMinutes} Minuten: ${sum}/${count} ${avgVal}`,
+					`'${xidSource}': Durchschnitt der letzten ${durationInMinutes} Minuten: ${sum}/${count} ${avg}`,
 				);
 
-				console.log(`Updating Average Value ( ${avgVal} ) with xid: ` + xidTarget);
-				this.adapter.setState(xidTarget, { val: avgVal, ack: true });
+				console.log(`Updating Average Value ( ${avg} ) with xid: ` + xidTarget);
+				this.adapter.setState(xidTarget, { val: avg, ack: true });
 			},
 		);
 	}
+}
+
+export function calculateAverageValue(relValues: { val: number; ts: number }[]): {
+	sum: number;
+	count: number;
+	avg: number;
+} {
+	const sum = relValues.map((item) => item.val).reduce((prev, curr) => prev + curr, 0);
+	const count = relValues.length != 0 ? relValues.length : 0;
+	const avg = sum / (count > 0 ? count : 1);
+	return { sum, count, avg };
 }
