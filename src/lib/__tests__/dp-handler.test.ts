@@ -66,19 +66,23 @@ describe('dp-handler', () => {
 				XID_EEG_STATE_OPERATION,
 			],
 			async (value: any) => {
+				const asserts = utils.unit.createAsserts(database, adapter);
+
 				await createObjects(adapter as unknown as AdapterInstance);
 
 				// assert
 				expect(adapter.setObjectNotExistsAsync).to.calledWith(value);
 				expect(adapter.subscribeStates).to.calledWith(value);
 				expect(adapter.setStateAsync).to.calledWith(value);
+
+				asserts.assertStateExists(value);
 			},
 		);
 	});
 
 	describe('addSubscrptions', () => {
 		itEach(
-			'should create state for ${value}',
+			'should create subscribition for ${value}',
 			[
 				mockedPvGeneration,
 				mockedTotalLoad,
