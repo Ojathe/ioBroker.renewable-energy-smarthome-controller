@@ -1,7 +1,8 @@
 import { AdapterInstance } from '@iobroker/adapter-core';
 
 export const getStateAsNumber = async (adapter: AdapterInstance, xid: string): Promise<number | undefined> => {
-	const state = await adapter.getStateAsync(`${adapter.name}.${adapter.instance}.` + xid);
+	// const state = await adapter.getStateAsync(`${adapter.name}.${adapter.instance}.` + xid);
+	const state = await adapter.getStateAsync(xid);
 
 	if (!state) {
 		console.log(

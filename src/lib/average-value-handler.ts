@@ -123,8 +123,6 @@ export class AverageValueHandler {
 
 			const values = (result as unknown as any).result as { val: number; ts: number }[];
 
-			console.log('sendToAsync result', result);
-
 			await this.calculateAvgValue(values, item.xidAvg);
 			await this.calculateAvgValue(values, item.xidAvg5, start5Min);
 		} catch (error) {

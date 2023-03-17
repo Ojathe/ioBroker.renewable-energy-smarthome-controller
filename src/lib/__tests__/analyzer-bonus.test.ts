@@ -28,41 +28,16 @@ describe('analyzer-bonus', () => {
 		const init = async (
 			props: { powerDifCurrent: number; powerDifAvg: number; powerGridAvg: number } = defaultProps,
 		) => {
-			const handler = {
-				powerDif: {
-					getCurrent: sinon.stub().resolves(props.powerDifCurrent),
-					get10Min: sinon.stub().resolves(props.powerDifAvg),
-				},
-				powerGrid: {
-					get10Min: sinon.stub().resolves(props.powerGridAvg),
-				},
-			};
-			const analyzer = new AnalyzerBonus(
-				adapter as unknown as AdapterInstance,
-				handler as unknown as AverageValueHandler,
-			);
+			const handler = await AverageValueHandler.build(adapter as unknown as AdapterInstance);
+			const analyzer = new AnalyzerBonus(adapter as unknown as AdapterInstance, handler);
 
+			adapter.setState(handler.powerDif.xidCurrent, props.powerDifCurrent);
+			adapter.setState(handler.powerDif.xidAvg, props.powerDifAvg);
+			adapter.setState(handler.powerGrid.xidAvg, props.powerGridAvg);
 			return { handler, analyzer };
 		};
 
-		[
-			{ name: '10 Minutes PowerDif', selector: (handler: any) => handler.powerDif.get10Min },
-			{ name: 'Current PowerDif', selector: (handler: any) => handler.powerDif.getCurrent },
-			{ name: '10 Minutes PowerGrid', selector: (handler: any) => handler.powerGrid.get10Min },
-		].forEach((testCase) => {
-			it(`_ fetches average ${testCase.name}`, async () => {
-				// arrange
-				const { analyzer, handler } = await init();
-
-				// act
-				await analyzer.run();
-				// assert
-				// expect(handler.powerDif).to.be.called;
-				expect(testCase.selector(handler)).to.be.called;
-			});
-		});
-
-		[XID_INGOING_BAT_SOC, XID_EEG_STATE_BONUS, XID_EEG_STATE_SOC_LAST_BONUS].forEach((testCase) => {
+		[XID_INGOING_BAT_SOC, XID_EEG_STATE_BONUS].forEach((testCase) => {
 			it(`_ fetches ${testCase}`, async () => {
 				// arrange
 				const { analyzer } = await init();
@@ -73,16 +48,6 @@ describe('analyzer-bonus', () => {
 			});
 		});
 
-		it('_ updates Bonus State', async () => {
-			// arrange
-			const { analyzer } = await init();
-			// act
-			await analyzer.run();
-
-			//assert
-			expect(adapter.setStateAsync).to.be.calledWith(XID_EEG_STATE_BONUS);
-		});
-
 		it('_ do not update Battery Stand of Charge', async () => {
 			// arrange
 			const { analyzer } = await init();
@@ -90,55 +55,63 @@ describe('analyzer-bonus', () => {
 			await analyzer.run();
 
 			//assert
-			expect(adapter.setStateAsync).not.to.be.calledWith(XID_EEG_STATE_SOC_LAST_BONUS);
 		});
 
 		describe('_ detects no bonus', () => {
 			[
 				{
-					name: 'negative power balance',
+					name: 'neutral power balance',
 					props: { ...defaultProps },
-					bat: 0,
+					bat: 30,
 				},
 				{
-					name: 'negative current power balance',
+					name: 'negative current power',
 					props: { ...defaultProps, powerDifCurrent: -2 },
-					bat: 0,
+					bat: 30,
 				},
 				{
-					name: 'negative current power balance',
+					name: 'negative current power and positive avg',
 					props: { ...defaultProps, powerDifCurrent: -2, powerDifAvg: 2 },
+					bat: 30,
+				},
+				{
+					name: 'negative avg power',
+					props: { ...defaultProps, powerDifAvg: -2 },
 					bat: 0,
 				},
-				{ name: 'negative avg power balance', props: { ...defaultProps, powerDifAvg: -2 }, bat: 0 },
 				{
-					name: 'negative avg power balance',
+					name: 'negative avg power and positive current',
 					props: { ...defaultProps, powerDifAvg: -2, powerDifCurrent: 2 },
-					bat: 0,
+					bat: 30,
 				},
 				{
-					name: 'grid selling but negative balance',
-					props: { ...defaultProps, powerGridAvg: 2 },
-					bat: 0,
+					name: 'grid selling but low battery',
+					props: { powerDifCurrent: 1, powerDifAvg: 1, powerGridAvg: 2 },
+					bat: AnalyzerBonus.batChargeMinimum,
 				},
 				{
-					name: 'grid selling but negative balance',
-					props: { ...defaultProps, powerGridAvg: 2 },
-					bat: AnalyzerBonus.sellingThreshold,
-				},
-				{
-					name: 'positive balance, empty battery and grid selling under threshold',
-					props: { powerDifCurrent: 1, powerDifAvg: 1, powerGridAvg: AnalyzerBonus.sellingThreshold },
-					bat: 10,
+					name: 'grid selling but not enough for threshold',
+					props: { ...defaultProps, powerGridAvg: AnalyzerBonus.sellingThreshold },
+					bat: 30,
 				},
 			].forEach((testCase) => {
-				it(`when  ${testCase.name} with ${testCase.bat}% Battery (${testCase.props.powerDifCurrent},${testCase.props.powerDifAvg},${testCase.props.powerGridAvg})`, async () => {
+				it(`when  '${testCase.name}' setting: ${testCase.props.powerDifCurrent}kW cur,${testCase.props.powerDifAvg}kW avg,${testCase.props.powerGridAvg}kW grid, ${testCase.bat}% bat`, async () => {
+					const asserts = utils.unit.createAsserts(database, adapter);
+
+					// arrange
 					const { analyzer } = await init(testCase.props);
 					adapter.setState(XID_INGOING_BAT_SOC, testCase.bat);
 
+					// act
 					await analyzer.run();
 
+					// assert
+					// update bonus itself
 					expect(adapter.setStateAsync).to.be.calledWith(XID_EEG_STATE_BONUS, false);
+					asserts.assertStateHasValue(XID_EEG_STATE_BONUS, false);
+
+					// do not update last bonus battery charge
+					expect(adapter.setStateAsync).not.to.be.calledWith(XID_EEG_STATE_SOC_LAST_BONUS);
 				});
 			});
 		});
@@ -146,26 +119,36 @@ describe('analyzer-bonus', () => {
 		describe('detects bonus ', () => {
 			[
 				{
-					name: 'negative power balance',
-					props: { ...defaultProps },
-					bat: 10,
+					name: 'when positive powerDif ',
+					props: { ...defaultProps, powerDifCurrent: 1, powerDifAvg: 1 },
+					bat: 30,
+				},
+				{
+					name: 'when positive powerGrid ',
+					props: { ...defaultProps, powerDifCurrent: 1, powerGridAvg: 1 },
+					bat: 30,
 				},
 			].forEach((testCase) => {
-				it(`when  ${testCase.name} with ${testCase.bat}% Battery (${testCase.props.powerDifCurrent},${testCase.props.powerDifAvg},${testCase.props.powerGridAvg})`, async () => {
+				it(`when  '${testCase.name}' setting: ${testCase.props.powerDifCurrent}kW cur,${testCase.props.powerDifAvg}kW avg,${testCase.props.powerGridAvg}kW grid, ${testCase.bat}% bat`, async () => {
+					const asserts = utils.unit.createAsserts(database, adapter);
+
+					// arrange
 					const { analyzer } = await init(testCase.props);
 					adapter.setState(XID_INGOING_BAT_SOC, testCase.bat);
 
+					// act
 					await analyzer.run();
 
+					// assert
+					// update bonus state itself
 					expect(adapter.setStateAsync).to.be.calledWith(XID_EEG_STATE_BONUS, true);
+					asserts.assertStateHasValue(XID_EEG_STATE_BONUS, true);
+
+					// update battery stand of charge
+					expect(adapter.setStateAsync).to.be.calledWith(XID_EEG_STATE_SOC_LAST_BONUS, testCase.bat);
+					asserts.assertStateHasValue(XID_EEG_STATE_SOC_LAST_BONUS, testCase.bat);
 				});
 			});
-		});
-
-		describe('updates battery Charge last Bonus', () => {
-			// it('when Bonus was detected', () => {});
-			// it('when Bonus was detected and last charge is greather than current', () => {});
-			// it('when no Bonus detected, but the charge is greather than last time', () => {});
 		});
 	});
 });

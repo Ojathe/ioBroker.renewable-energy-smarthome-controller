@@ -70,9 +70,6 @@ export class AverageValue {
 
 		this.mutation = props?.mutation;
 
-		console.log(this.name + ' this.xidSource: ' + this.xidSource);
-		console.log(this.name + ' this.mutation: ' + this.mutation);
-
 		if (!this.mutation && !this.xidSource) {
 			throw new Error(`${name}: Es dürfen nicht xidSource UND Mutation undefniert sein!`);
 		}
