@@ -4,8 +4,9 @@ import { XID_EEG_STATE_BONUS, XID_EEG_STATE_SOC_LAST_BONUS, XID_INGOING_BAT_SOC 
 
 export class AnalyzerBonus {
 	// TODO move to config
-	private readonly sellingThreshold: number = 0.5;
-	private readonly bonusReportThreshold: number = 0.3;
+	public static readonly sellingThreshold: number = 0.5;
+	public static readonly bonusReportThreshold: number = 0.3;
+	public static readonly batChargeMinimum: number = 10;
 
 	constructor(private adapter: AdapterInstance, private avgValueHandler: AverageValueHandler) {}
 
@@ -23,25 +24,27 @@ export class AnalyzerBonus {
 		const powerDifAvg = await this.avgValueHandler.powerDif.get10Min();
 
 		// TODO PV Connection
+		// there is no bonus, if not or to less selling to grid while the battery is low
+		const gridPowerAvg = await this.avgValueHandler.powerGrid.get10Min();
 
 		// there is a bonus, if the system is selling more then threshold
-		if (powerDif > this.sellingThreshold) {
+		if (powerDif > 0 && gridPowerAvg > AnalyzerBonus.sellingThreshold) {
 			powerBonus = true;
 		}
 
-		// there is no bonus, if not or to less selling to grid while the battery is low
-		const gridPowerAvg = await this.avgValueHandler.powerGrid.get10Min();
 		const batSoc = (await this.adapter.getStateAsync(XID_INGOING_BAT_SOC))?.val ?? 0;
-		if (!(gridPowerAvg > this.sellingThreshold) && batSoc < 10) {
+		console.log('Battery Stand of Charge: ', batSoc);
+		if (!(gridPowerAvg > AnalyzerBonus.sellingThreshold) && batSoc < AnalyzerBonus.batChargeMinimum) {
 			powerBonus = false;
 		}
 
 		// report the bonus only if is solid
-		const powerBonusEffective = powerBonus && powerDifAvg > this.bonusReportThreshold;
+
+		const powerBonusEffective = powerBonus && powerDifAvg > AnalyzerBonus.bonusReportThreshold;
 
 		const msg = `BonusAnalysis # Bonus PowerDif=${powerDif} PowerDifAvg=${powerDifAvg} => EffektiverBonus:${powerBonusEffective} SOC=${batSoc}`;
-		const reportedBonus: boolean =
-			((await this.adapter.getStateAsync(XID_EEG_STATE_BONUS))?.val as boolean) ?? false;
+		const bonusState = await this.adapter.getStateAsync(XID_EEG_STATE_BONUS);
+		const reportedBonus: boolean = (bonusState?.val as boolean) ?? false;
 
 		if (powerBonusEffective && !reportedBonus) {
 			console.log(msg + ' || STATE CHANGED');
