@@ -69,7 +69,7 @@ export class AverageValueHandler {
 					`Calculating PowerDif Load:${load} kWh, PV-Gen: ${pvPower} kWh => Dif of ${pvPower - load}`,
 				);
 
-				return pvPower - load;
+				return round(pvPower - load);
 			},
 		});
 
@@ -78,7 +78,7 @@ export class AverageValueHandler {
 			xidSource: XID_INGOING_GRID_LOAD,
 			async mutation(val: number) {
 				const isGridBuying = (await getStateAsBoolean(adapter, XID_INGOING_IS_GRID_BUYING)) ?? true;
-				return val * (isGridBuying ? -1 : 1);
+				return round(val * (isGridBuying ? -1 : 1));
 			},
 		});
 
@@ -105,6 +105,7 @@ export class AverageValueHandler {
 			sourceVal = await item.mutation(sourceVal);
 		}
 
+		console.log(`Updating Current Value (${sourceVal}) with xid: ${item.xidCurrent}`);
 		await this.adapter.setStateAsync(item.xidCurrent, sourceVal);
 
 		try {
@@ -148,8 +149,13 @@ export function calculateAverageValue(values: { val: number; ts: number }[]): {
 	count: number;
 	avg: number;
 } {
-	const sum = values.map((item) => item.val).reduce((prev, curr) => prev + curr, 0);
+	const sum = round(values.map((item) => item.val).reduce((prev, curr) => prev + curr, 0));
 	const count = values.length != 0 ? values.length : 0;
-	const avg = sum / (count > 0 ? count : 1);
+	const avg = round(sum / (count > 0 ? count : 1));
+
 	return { sum, count, avg };
+}
+
+function round(val: number): number {
+	return Math.round(val * 100) / 100;
 }
