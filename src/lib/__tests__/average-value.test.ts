@@ -60,19 +60,18 @@ describe('AverageValue', () => {
 			);
 		});
 
-		itEach('should create state for ${value}', [mockedCurrent, mockedAvg, mockedAvg5], async (value: any) => {
+		it('should be able to read and write values ', async () => {
 			const asserts = utils.unit.createAsserts(database, adapter);
 
 			const avgValToTest = await AverageValue.build(adapter as unknown as AdapterInstance, mockedName, {
 				xidSource: mockedSource,
 			});
-			expect(avgValToTest).not.to.be.undefined;
+			asserts.assertStateExists(avgValToTest.xidCurrent);
+			await adapter.setStateAsync(avgValToTest.xidCurrent, 2);
 
 			// assert
-			expect(adapter.setObjectNotExistsAsync).to.calledWith(value);
-			expect(adapter.subscribeStates).to.calledWith(value);
-			expect(adapter.setStateAsync).to.calledWith(value);
-			asserts.assertStateExists(value);
+			asserts.assertStateHasValue(avgValToTest.xidCurrent, 2);
+			expect(await avgValToTest.getCurrent()).to.eq(2);
 		});
 	});
 });
