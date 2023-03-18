@@ -62,6 +62,22 @@ export class RenewableEnergySmarthomeController extends utils.Adapter {
 
 		setStateAsBoolean(this, XID_EEG_STATE_OPERATION, this.config.optionEnergyManagementActive);
 
+		// TODO Work in progress
+
+		[
+			this.config.optionSourcePvGeneration,
+			this.config.optionSourceBatterySoc,
+			this.config.optionSourceIsGridBuying,
+			this.config.optionSourceIsGridLoad,
+			this.config.optionSourceSolarRadiation,
+			this.config.optionSourceTotalLoad,
+			this.config.optionSourceBatteryLoad,
+		].forEach((externalId) => {
+			console.log('initializing: ' + externalId);
+
+			this.updateIngoingValue(externalId);
+		});
+
 		this.avgValueHandler = await AverageValueHandler.build(this);
 		this.analyzerBonus = new AnalyzerBonus(this, this.avgValueHandler);
 		this.analyzerLack = new AnalyzerLack(this, this.avgValueHandler);
@@ -120,16 +136,31 @@ export class RenewableEnergySmarthomeController extends utils.Adapter {
 			// The state was changed
 			//this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
 
-			this.updateIngoingDatapoints(id, state);
+			this.updateIngoingStateWithValue(id, state.val);
 		} else {
 			// The state was deleted
 			this.log.info(`state ${id} deleted`);
 		}
 	}
 
-	private updateIngoingDatapoints(id: string, state: ioBroker.State): void {
-		let xidtoUpdate = '';
-		switch (id) {
+	private updateIngoingStateWithValue(externalId: string, value: any): void {
+		const xidtoUpdate = this.getInnerStateXid(externalId);
+		if (xidtoUpdate) {
+			this.setState(xidtoUpdate, { val: value, ack: true });
+			console.log(`Updating ingoing-value '${xidtoUpdate}' from '${externalId}' with '${value}'`);
+		}
+	}
+
+	private async updateIngoingValue(externalId: string): Promise<void> {
+		const state = await this.getForeignStateAsync(externalId);
+
+		console.log('state', state);
+		this.updateIngoingStateWithValue(externalId, state?.val);
+	}
+
+	private getInnerStateXid(externalId: string): string | undefined {
+		let xidtoUpdate;
+		switch (externalId) {
 			case this.config.optionSourcePvGeneration:
 				xidtoUpdate = XID_INGOING_PV_GENERATION;
 				break;
@@ -153,10 +184,7 @@ export class RenewableEnergySmarthomeController extends utils.Adapter {
 				break;
 		}
 
-		if (xidtoUpdate.length > 0) {
-			this.setState(xidtoUpdate, { val: state.val, ack: true });
-			console.log(`Updating ingoing-value '${xidtoUpdate}' from '${id}' with '${state.val}'`);
-		}
+		return xidtoUpdate;
 	}
 	// If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
 	// /**
