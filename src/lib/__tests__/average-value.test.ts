@@ -1,7 +1,6 @@
 import { AdapterInstance } from '@iobroker/adapter-core';
 import { utils } from '@iobroker/testing';
 import { expect } from 'chai';
-import { itEach } from 'mocha-it-each';
 import { AverageValue } from '../average-value';
 
 const { adapter, database } = utils.unit.createMocks({});

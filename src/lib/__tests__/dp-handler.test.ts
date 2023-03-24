@@ -1,7 +1,6 @@
 import { AdapterInstance } from '@iobroker/adapter-core';
 import { utils } from '@iobroker/testing';
 import { expect } from 'chai';
-import { itEach } from 'mocha-it-each';
 import {
 	addSubscriptions,
 	createObjects,
@@ -50,52 +49,48 @@ describe('dp-handler', () => {
 		database.clear();
 	});
 	describe('create Objects', () => {
-		itEach(
-			'should create state for ${value}',
-			[
-				XID_INGOING_PV_GENERATION,
-				XID_INGOING_TOTAL_LOAD,
-				XID_INGOING_BAT_SOC,
-				XID_INGOING_SOLAR_RADIATION,
-				XID_INGOING_IS_GRID_BUYING,
-				XID_INGOING_GRID_LOAD,
-				XID_INGOING_BAT_LOAD,
-				XID_EEG_STATE_BONUS,
-				XID_EEG_STATE_LOSS,
-				XID_EEG_STATE_SOC_LAST_BONUS,
-				XID_EEG_STATE_OPERATION,
-			],
-			async (value: any) => {
+		[
+			XID_INGOING_PV_GENERATION,
+			XID_INGOING_TOTAL_LOAD,
+			XID_INGOING_BAT_SOC,
+			XID_INGOING_SOLAR_RADIATION,
+			XID_INGOING_IS_GRID_BUYING,
+			XID_INGOING_GRID_LOAD,
+			XID_INGOING_BAT_LOAD,
+			XID_EEG_STATE_BONUS,
+			XID_EEG_STATE_LOSS,
+			XID_EEG_STATE_SOC_LAST_BONUS,
+			XID_EEG_STATE_OPERATION,
+		].forEach((testCase) => {
+			it(`should create state for ${testCase}`, async () => {
 				const asserts = utils.unit.createAsserts(database, adapter);
 
 				await createObjects(adapter as unknown as AdapterInstance);
 
 				// assert
-				expect(adapter.setObjectNotExistsAsync).to.calledWith(value);
-				expect(adapter.subscribeStates).to.calledWith(value);
-				expect(adapter.setStateAsync).to.calledWith(value);
+				expect(adapter.setObjectNotExistsAsync).to.calledWith(testCase);
+				expect(adapter.subscribeStates).to.calledWith(testCase);
+				expect(adapter.setStateAsync).to.calledWith(testCase);
 
-				asserts.assertStateExists(value);
-			},
-		);
+				asserts.assertStateExists(testCase);
+			});
+		});
 	});
 
 	describe('addSubscrptions', () => {
-		itEach(
-			'should create subscribition for ${value}',
-			[
-				mockedPvGeneration,
-				mockedTotalLoad,
-				mockedBatterySoc,
-				mockedSolarRadiaton,
-				mockedIsGridBuying,
-				mockedIsGridLoad,
-				mockedBatteryLoad,
-			],
-			async (value: any) => {
+		[
+			mockedPvGeneration,
+			mockedTotalLoad,
+			mockedBatterySoc,
+			mockedSolarRadiaton,
+			mockedIsGridBuying,
+			mockedIsGridLoad,
+			mockedBatteryLoad,
+		].forEach((testCase) => {
+			it(`should create subscribition for ${testCase}`, async () => {
 				addSubscriptions(adapter as unknown as AdapterInstance, mockedConfig);
-				expect(adapter.subscribeForeignStates).to.calledWith(value);
-			},
-		);
+				expect(adapter.subscribeForeignStates).to.calledWith(testCase);
+			});
+		});
 	});
 });
