@@ -48,15 +48,6 @@ describe('analyzer-bonus', () => {
 			});
 		});
 
-		it('_ do not update Battery Stand of Charge', async () => {
-			// arrange
-			const { analyzer } = await init();
-			// act
-			await analyzer.run();
-
-			//assert
-		});
-
 		describe('_ detects no bonus', () => {
 			[
 				{

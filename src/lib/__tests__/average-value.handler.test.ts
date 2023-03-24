@@ -287,7 +287,5 @@ describe('average-value.handler', () => {
 			expect(result.count).to.eq(3);
 			expect(result.avg).to.eq(4);
 		});
-
-		//TODO more cases
 	});
 });

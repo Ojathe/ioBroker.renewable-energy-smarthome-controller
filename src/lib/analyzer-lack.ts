@@ -6,7 +6,8 @@ export class AnalyzerLack {
 	constructor(private adapter: AdapterInstance, private avgValueHandler: AverageValueHandler) {}
 
 	// TODO move to config
-	readonly threshold = -0.5;
+	public static readonly lackReportingThreshold = -0.5;
+	public static readonly gridBuyingThreshold = -0.2;
 
 	public async run(): Promise<void> {
 		// TODO investigate on how to configure values
@@ -18,8 +19,6 @@ export class AnalyzerLack {
 		let powerLack = false;
 
 		// Energy, missing (<0) oder additionally (>0) related to the household load
-		const powerDif = await this.avgValueHandler.powerDif.getCurrent();
-		const powerDifAvg = await this.avgValueHandler.powerDif.get10Min();
 		const powerDifAvg5 = await this.avgValueHandler.powerDif.get5Min();
 		const gridPowerAvg5 = await this.avgValueHandler.powerGrid.get5Min();
 		const batSoc = (await this.adapter.getStateAsync(XID_INGOING_BAT_SOC))?.val ?? 0;
@@ -29,49 +28,46 @@ export class AnalyzerLack {
 		//	-> mindestens 2kW vom Stromnetz/AKku bezogen werden,
 		//	-> der Akku weniger als 95% hat
 		//	-> kaum bis keine Solarstrahlung existiert
-		if (powerDif < -1.9 && batSoc < 95) {
+		if (powerDifAvg5 < -1.9 && batSoc < 95) {
 			powerLack = true;
 		}
 
 		// Mangel, wenn
 		//	-> mindestens 1kW vom Stromnetz / Akku bezogen werden
 		//	-> der Akkustand unterhalb von 60% ist
-		if (powerDif < -0.9 && batSoc < 60) {
+		if (powerDifAvg5 < -0.9 && batSoc < 60) {
 			powerLack = true;
 		}
 
 		// Mangel, wenn
 		//    -> mindestens 0,5kW vom Stromnetz / Akku bezogen werden
 		//    -> der Akku unterhalb 30% ist
-		if (powerDif < -0.5 && batSoc < 30) {
+		if (powerDifAvg5 < -0.5 && batSoc < 30) {
 			powerLack = true;
 		}
 
 		// Mangel, wenn
 		//    -> überhaupt vom Stromnetz / Akku bezogen werden
 		//    -> der Akku unterhalb 10% ist
-		if (powerDif < 0 && batSoc < 10) {
+		if (powerDifAvg5 < 0 && batSoc < 10) {
 			powerLack = true;
 		}
 
-		// report the lack only if is solid (5 or 10 Minutes depending on current state)
-		let powerLackEffective = powerLack ? powerDifAvg5 < this.threshold : powerDifAvg < this.threshold;
-
 		// Mangel forcen, wenn vom Stromnetz genommen wird
-		if (gridPowerAvg5 < -0.2) {
-			powerLackEffective = true;
+		if (gridPowerAvg5 <= AnalyzerLack.gridBuyingThreshold) {
+			powerLack = true;
 		}
 
-		const msg = `LackAnalysis # Lack PowerDif=${powerDif}, PowerDifAvg=${powerDifAvg}, GridPowerAvg5=${gridPowerAvg5} => EffectiveLack:${powerLackEffective} SOC=${batSoc}`;
+		const msg = `LackAnalysis # Lack GridPowerAvg5=${gridPowerAvg5} => PowerLack:${powerLack} SOC=${batSoc}`;
 		const reportedLack: boolean = ((await this.adapter.getStateAsync(XID_EEG_STATE_LOSS))?.val as boolean) ?? false;
 
-		if (powerLackEffective && !reportedLack) {
+		if (powerLack && !reportedLack) {
 			console.log(msg + ' || STATE CHANGED');
 		} else {
 			console.debug(msg);
 		}
 
 		// Update the state
-		await this.adapter.setStateAsync(XID_EEG_STATE_LOSS, powerLackEffective);
+		await this.adapter.setStateAsync(XID_EEG_STATE_LOSS, powerLack);
 	}
 }
