@@ -1,4 +1,4 @@
-import { RenewableEnergySmarthomeController } from '../main';
+import { AdapterInstance } from '@iobroker/adapter-core';
 
 export const XID_INGOING_PV_GENERATION = 'ingoing.pv-generation';
 export const XID_INGOING_TOTAL_LOAD = 'ingoing.total-load';
@@ -18,7 +18,7 @@ export type AccessProps = { read: boolean; write: boolean };
 export type CreateStateProps = { desc?: string; unit?: string; custom?: Record<string, any> };
 
 async function createObject<T extends ioBroker.StateValue>(
-	context: RenewableEnergySmarthomeController,
+	context: AdapterInstance,
 	name: string,
 	typeName: ioBroker.CommonType,
 	defaultValue: T,
@@ -55,7 +55,7 @@ async function createObject<T extends ioBroker.StateValue>(
 }
 
 export async function createObjectString(
-	adapter: RenewableEnergySmarthomeController,
+	adapter: AdapterInstance,
 	name: string,
 	defaultValue = '',
 	props?: CreateStateProps,
@@ -65,7 +65,7 @@ export async function createObjectString(
 }
 
 export async function createObjectBool(
-	adapter: RenewableEnergySmarthomeController,
+	adapter: AdapterInstance,
 	name: string,
 	defaultValue = false,
 	props?: CreateStateProps,
@@ -75,7 +75,7 @@ export async function createObjectBool(
 }
 
 export async function createObjectNum(
-	adapter: RenewableEnergySmarthomeController,
+	adapter: AdapterInstance,
 	name: string,
 	defaultValue = 0,
 	props?: CreateStateProps,
@@ -84,7 +84,7 @@ export async function createObjectNum(
 	await createObject<number>(adapter, name, 'number', defaultValue, props, accessProps);
 }
 
-export const createObjects = async (adapter: RenewableEnergySmarthomeController) => {
+export const createObjects = async (adapter: AdapterInstance): Promise<void> => {
 	await createObjectNum(adapter, XID_INGOING_PV_GENERATION, 0, {
 		desc: 'The amount of power currently generated',
 		unit: 'kWh',
@@ -130,7 +130,7 @@ export const createObjects = async (adapter: RenewableEnergySmarthomeController)
 	});
 };
 
-export const addSubscriptions = (adapter: ioBroker.Adapter, config: ioBroker.AdapterConfig): void => {
+export const addSubscriptions = (adapter: AdapterInstance, config: ioBroker.AdapterConfig): void => {
 	adapter.subscribeForeignStates(config.optionSourcePvGeneration);
 	adapter.subscribeForeignStates(config.optionSourceTotalLoad);
 	adapter.subscribeForeignStates(config.optionSourceBatterySoc);
@@ -138,6 +138,4 @@ export const addSubscriptions = (adapter: ioBroker.Adapter, config: ioBroker.Ada
 	adapter.subscribeForeignStates(config.optionSourceIsGridBuying);
 	adapter.subscribeForeignStates(config.optionSourceIsGridLoad);
 	adapter.subscribeForeignStates(config.optionSourceBatteryLoad);
-	console.log(`SUBSCRIBED TO BATLOAD : adapter.subscribeForeignStates(${config.optionSourceBatteryLoad})`);
-	console.log('Added subscriptions.');
 };

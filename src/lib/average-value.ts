@@ -1,4 +1,4 @@
-import { RenewableEnergySmarthomeController } from '../main';
+import { AdapterInstance } from '@iobroker/adapter-core';
 import { createObjectNum } from './dp-handler';
 import { getStateAsNumber } from './util/state-util';
 
@@ -44,14 +44,23 @@ export class AverageValue {
 	public readonly xidSource?: string;
 	public readonly name: string;
 	public readonly desc?: string;
-	public readonly xidCurrent: string;
-	public readonly xidAvg: string;
-	public readonly xidAvg5: string;
+	private _xidCurrent = '';
+	public get xidCurrent(): string {
+		return this._xidCurrent;
+	}
+	private _xidAvg = '';
+	public get xidAvg(): string {
+		return this._xidAvg;
+	}
+	private _xidAvg5 = '';
+	public get xidAvg5(): string {
+		return this._xidAvg5;
+	}
 
 	public readonly mutation?: (number: number) => Promise<number>;
 
-	constructor(
-		private adapter: RenewableEnergySmarthomeController,
+	private constructor(
+		private adapter: AdapterInstance,
 		name: string,
 		props?: { xidSource?: string; desc?: string; unit?: string; mutation?: (number: number) => Promise<number> },
 	) {
@@ -59,30 +68,37 @@ export class AverageValue {
 		this.name = name;
 		this.desc = props?.desc;
 
-		this.xidCurrent = this.createStates(adapter, 'current', { unit: props?.unit, custom: customHistory });
-		this.xidAvg = this.createStates(adapter, 'last-10-min', {
-			descAddon: ' der letzten 10 Minuten',
-			unit: props?.unit,
-			custom: customInflux,
-		});
-
-		this.xidAvg5 = this.createStates(adapter, 'last-5-min', {
-			descAddon: ' der letzten 5 Minuten',
-			unit: props?.unit,
-		});
-
 		this.mutation = props?.mutation;
-
-		console.log(this.name + ' this.xidSource: ' + this.xidSource);
-		console.log(this.name + ' this.mutation: ' + this.mutation);
 
 		if (!this.mutation && !this.xidSource) {
 			throw new Error(`${name}: Es dürfen nicht xidSource UND Mutation undefniert sein!`);
 		}
 	}
 
+	static async build(
+		adapter: AdapterInstance,
+		name: string,
+		props?: { xidSource?: string; desc?: string; unit?: string; mutation?: (number: number) => Promise<number> },
+	): Promise<AverageValue> {
+		const val = new AverageValue(adapter, name, props);
+
+		val._xidCurrent = val.createStates(adapter, 'current', { unit: props?.unit, custom: customHistory });
+		val._xidAvg = val.createStates(adapter, 'last-10-min', {
+			descAddon: ' der letzten 10 Minuten',
+			unit: props?.unit,
+			custom: customInflux,
+		});
+
+		val._xidAvg5 = val.createStates(adapter, 'last-5-min', {
+			descAddon: ' der letzten 5 Minuten',
+			unit: props?.unit,
+		});
+
+		return val;
+	}
+
 	private createStates(
-		context: RenewableEnergySmarthomeController,
+		context: AdapterInstance,
 		subItem: string,
 		props?: { descAddon?: string; unit?: string; custom?: Record<string, any> },
 	): string {

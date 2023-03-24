@@ -1,4 +1,4 @@
-import { RenewableEnergySmarthomeController } from '../main';
+import { AdapterInstance } from '@iobroker/adapter-core';
 import { AverageValue } from './average-value';
 import {
 	XID_INGOING_BAT_LOAD,
@@ -11,32 +11,51 @@ import {
 import { getStateAsBoolean, getStateAsNumber } from './util/state-util';
 
 export class AverageValueHandler {
-	public readonly solar: AverageValue;
-	public readonly powerPv: AverageValue;
-	public readonly powerDif: AverageValue;
-	public readonly powerGrid: AverageValue;
-	public readonly batLoad: AverageValue;
+	private _solar: AverageValue | undefined;
+	public get solar(): AverageValue {
+		return this._solar!;
+	}
+	private _powerPv: AverageValue | undefined;
+	public get powerPv(): AverageValue {
+		return this._powerPv!;
+	}
+	private _powerDif: AverageValue | undefined;
+	public get powerDif(): AverageValue {
+		return this._powerDif!;
+	}
+	private _powerGrid: AverageValue | undefined;
+	public get powerGrid(): AverageValue {
+		return this._powerGrid!;
+	}
+	private _batLoad: AverageValue | undefined;
+	public get batLoad(): AverageValue {
+		return this._batLoad!;
+	}
 
-	constructor(private adapter: RenewableEnergySmarthomeController) {
-		this.solar = new AverageValue(adapter, 'solar-radiation', {
+	private constructor(private adapter: AdapterInstance) {}
+
+	static async build(adapter: AdapterInstance): Promise<AverageValueHandler> {
+		const val = new AverageValueHandler(adapter);
+
+		val._solar = await AverageValue.build(adapter, 'solar-radiation', {
 			desc: 'Average solar radiation',
 			xidSource: XID_INGOING_SOLAR_RADIATION,
 			unit: 'wm²',
 		});
 
-		this.powerPv = new AverageValue(adapter, 'power-pv', {
+		val._powerPv = await AverageValue.build(adapter, 'power-pv', {
 			desc: 'PV generation',
 			xidSource: XID_INGOING_PV_GENERATION,
 			unit: 'kW',
 		});
 
-		this.batLoad = new AverageValue(adapter, 'bat-load', {
+		val._batLoad = await AverageValue.build(adapter, 'bat-load', {
 			desc: 'The Battery load (-) consuming / (+) charging',
 			xidSource: XID_INGOING_BAT_LOAD,
 			unit: 'kW',
 		});
 
-		this.powerDif = new AverageValue(adapter, 'power-dif', {
+		val._powerDif = await AverageValue.build(adapter, 'power-dif', {
 			desc: 'difference of energy over generation (+) and loss consumption(-)',
 			async mutation(_val: number) {
 				const load = await getStateAsNumber(adapter, XID_INGOING_TOTAL_LOAD);
@@ -50,20 +69,22 @@ export class AverageValueHandler {
 					`Calculating PowerDif Load:${load} kWh, PV-Gen: ${pvPower} kWh => Dif of ${pvPower - load}`,
 				);
 
-				return pvPower - load;
+				return round(pvPower - load);
 			},
 		});
 
-		this.powerGrid = new AverageValue(adapter, 'power-grid', {
+		val._powerGrid = await AverageValue.build(adapter, 'power-grid', {
 			desc: 'amount of generation(+) or buying(-) of energy',
 			xidSource: XID_INGOING_GRID_LOAD,
 			async mutation(val: number) {
 				const isGridBuying = (await getStateAsBoolean(adapter, XID_INGOING_IS_GRID_BUYING)) ?? true;
-				return val * (isGridBuying ? -1 : 1);
+				return round(val * (isGridBuying ? -1 : 1));
 			},
 		});
 
 		// TODO BatteryPower (lg-ess-home.0.user.essinfo.common.BATT.dc_power)
+
+		return val;
 	}
 
 	public async calculate(): Promise<void> {
@@ -84,61 +105,57 @@ export class AverageValueHandler {
 			sourceVal = await item.mutation(sourceVal);
 		}
 
+		console.log(`Updating Current Value (${sourceVal}) with xid: ${item.xidCurrent}`);
 		await this.adapter.setStateAsync(item.xidCurrent, sourceVal);
-		await this.calculateAvgValue(item.xidCurrent, item.xidAvg, 10);
-		await this.calculateAvgValue(item.xidCurrent, item.xidAvg5, 5);
-	}
 
-	private async calculateAvgValue(xidSource: string, xidTarget: string, durationInMinutes: number): Promise<void> {
-		const end = Date.now();
+		try {
+			const end = Date.now();
+			const start10Min = end - 60 * 1000 * 10;
+			const start5Min = end - 60 * 1000 * 5;
 
-		//console.log(`fetching history for '${xidSource}' `);
-
-		this.adapter.sendTo(
-			'history.0',
-			'getHistory',
-			{
-				id: `${this.adapter.name}.${this.adapter.instance}.${xidSource}`,
+			const result = await this.adapter.sendToAsync('history.0', 'getHistory', {
+				id: `${this.adapter.name}.${this.adapter.instance}.${item.xidCurrent}`,
 				options: {
-					start: end - 60 * 1000 * durationInMinutes,
+					start: start10Min,
 					end: end,
 					aggregate: 'none',
 				},
-			},
-			(callback) => {
-				if (!callback) {
-					console.log('The sendTo call did not respond a message');
-					return;
-				}
+			});
 
-				const { result, error } = callback as unknown as {
-					result: Array<{ val: number; ts: number }>;
-					step: any;
-					error: any;
-				};
+			const values = (result as unknown as any).result as { val: number; ts: number }[];
 
-				//console.log('Deconstructed Result', result);
-
-				if (error) {
-					console.error(`calculateAvgValue(${xidSource},${xidTarget},${durationInMinutes}) # ${error}`);
-					return;
-				}
-
-				const relValues = result.filter((item) => {
-					return item.val > 0;
-				});
-
-				const sum = relValues.map((item) => item.val).reduce((prev, curr) => prev + curr, 0);
-				const count = relValues.length != 0 ? relValues.length : 1;
-				const avgVal = sum / (count > 0 ? count : 1);
-
-				console.log(
-					`'${xidSource}': Durchschnitt der letzten ${durationInMinutes} Minuten: ${sum}/${count} ${avgVal}`,
-				);
-
-				console.log(`Updating Average Value ( ${avgVal} ) with xid: ` + xidTarget);
-				this.adapter.setState(xidTarget, { val: avgVal, ack: true });
-			},
-		);
+			await this.calculateAvgValue(values, item.xidAvg);
+			await this.calculateAvgValue(values, item.xidAvg5, start5Min);
+		} catch (error) {
+			console.error(`calculateAvgValue(${item.getCurrent}) # ${error}`);
+		}
 	}
+
+	private async calculateAvgValue(
+		values: { val: number; ts: number }[],
+		xidTarget: string,
+		startInMs = 0,
+	): Promise<void> {
+		values = values.filter((item) => item.val > 0 && item.ts >= startInMs);
+
+		const { sum, count, avg } = calculateAverageValue(values);
+		console.log(`Updating Average Value ( ${avg} ) (sum: ${sum}, count: ${count}) with xid: ` + xidTarget);
+		this.adapter.setStateAsync(xidTarget, { val: avg, ack: true });
+	}
+}
+
+export function calculateAverageValue(values: { val: number; ts: number }[]): {
+	sum: number;
+	count: number;
+	avg: number;
+} {
+	const sum = round(values.map((item) => item.val).reduce((prev, curr) => prev + curr, 0));
+	const count = values.length != 0 ? values.length : 0;
+	const avg = round(sum / (count > 0 ? count : 1));
+
+	return { sum, count, avg };
+}
+
+function round(val: number): number {
+	return Math.round(val * 100) / 100;
 }
