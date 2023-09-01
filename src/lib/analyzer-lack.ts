@@ -21,7 +21,7 @@ export class AnalyzerLack {
 		// Energy, missing (<0) oder additionally (>0) related to the household load
 		const powerDifAvg5 = await this.avgValueHandler.powerDif.get5Min();
 		const gridPowerAvg5 = await this.avgValueHandler.powerGrid.get5Min();
-		const batSoc = (await this.adapter.getStateAsync(XID_INGOING_BAT_SOC))?.val ?? 0;
+		const batSoc = ((await this.adapter.getStateAsync(XID_INGOING_BAT_SOC))?.val as number) ?? 0;
 
 		// TODO PV Connection
 		// Mangel, wenn
