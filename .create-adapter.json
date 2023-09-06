@@ -14,7 +14,7 @@
 	"dataSource": "poll",
 	"connectionIndicator": "no",
 	"language": "TypeScript",
-	"nodeVersion": "16",
+	"nodeVersion": "20",
 	"adminUi": "react",
 	"tools": ["ESLint", "Prettier", "devcontainer"],
 	"releaseScript": "yes",
