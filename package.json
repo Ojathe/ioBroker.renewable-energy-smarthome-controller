@@ -19,7 +19,7 @@
     "url": "git@github.com:Ojathe/ioBroker.renewable-energy-smarthome-controller.git"
   },
   "engines": {
-    "node": ">= 20"
+    "node": ">= 18"
   },
   "dependencies": {
     "@iobroker/adapter-core": "^3.0.3"
