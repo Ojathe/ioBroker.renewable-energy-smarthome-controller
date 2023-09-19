@@ -1,13 +1,14 @@
 {
 	"renewable-energy-smarthome-controller adapter settings": "Adapter settings for renewable-energy-smarthome-controller",
-	"optionInstanceInfluxDb": "optionInstanceInfluxDb",
-	"optionInstanceHistory": "optionInstanceHistory",
-	"optionEnergyManagementActive": "optionEnergyManagementActive",
+	"optionUseInfluxDb": "Activate logging into influxDb",
+	"optionInstanceInfluxDb": "Index of instance of Influx-Adapter to use",
+	"optionInstanceHistory": "Index of instance of History-Adapter to use",
+	"optionEnergyManagementActive": "Globally activate the smart power management",
 	"optionSourcePvGeneration": "optionSourcePvGeneration",
-	"optionSourceTotalLoad": "optionSourceTotalLoad",
-	"optionSourceBatterySoc": "OptionSourceBatterySoc",
-	"optionSourceSolarRadiation": "OptionSourceSolarRadiation",
-	"optionSourceIsGridBuying": "optionSourceIsGridBuying",
-	"optionSourceIsGridLoad": "optionSourceIsGridLoad",
-	"optionSourceBatteryLoad": "optionSourceBatteryLoad"
+	"optionSourceTotalLoad": "DP to get PVs total load (in kW)",
+	"optionSourceBatterySoc": "DP to get battery stand of charge (in %)",
+	"optionSourceSolarRadiation": "DP to get solar radiation (in w/m2)",
+	"optionSourceIsGridBuying": "DP to determine if power is buying from grid (boolean)",
+	"optionSourceGridLoad": "DP to get the power load on the grid (in kW) ",
+	"optionSourceBatteryLoad": "DP to get the power load on the battery (in kW)"
 }

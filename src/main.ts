@@ -68,7 +68,7 @@ export class RenewableEnergySmarthomeController extends utils.Adapter {
 			this.config.optionSourcePvGeneration,
 			this.config.optionSourceBatterySoc,
 			this.config.optionSourceIsGridBuying,
-			this.config.optionSourceIsGridLoad,
+			this.config.optionSourceGridLoad,
 			this.config.optionSourceSolarRadiation,
 			this.config.optionSourceTotalLoad,
 			this.config.optionSourceBatteryLoad,
@@ -170,7 +170,7 @@ export class RenewableEnergySmarthomeController extends utils.Adapter {
 			case this.config.optionSourceIsGridBuying:
 				xidtoUpdate = XID_INGOING_IS_GRID_BUYING;
 				break;
-			case this.config.optionSourceIsGridLoad:
+			case this.config.optionSourceGridLoad:
 				xidtoUpdate = XID_INGOING_GRID_LOAD;
 				break;
 			case this.config.optionSourceSolarRadiation:

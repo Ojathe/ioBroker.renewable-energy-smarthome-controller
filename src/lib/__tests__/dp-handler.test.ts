@@ -35,7 +35,7 @@ const mockedConfig: ioBroker.AdapterConfig = {
 	optionSourceBatterySoc: mockedBatterySoc,
 	optionSourceSolarRadiation: mockedSolarRadiaton,
 	optionSourceIsGridBuying: mockedIsGridBuying,
-	optionSourceIsGridLoad: mockedIsGridLoad,
+	optionSourceGridLoad: mockedIsGridLoad,
 	optionSourceBatteryLoad: mockedBatteryLoad,
 };
 

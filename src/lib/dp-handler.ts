@@ -136,6 +136,6 @@ export const addSubscriptions = (adapter: AdapterInstance, config: ioBroker.Adap
 	adapter.subscribeForeignStates(config.optionSourceBatterySoc);
 	adapter.subscribeForeignStates(config.optionSourceSolarRadiation);
 	adapter.subscribeForeignStates(config.optionSourceIsGridBuying);
-	adapter.subscribeForeignStates(config.optionSourceIsGridLoad);
+	adapter.subscribeForeignStates(config.optionSourceGridLoad);
 	adapter.subscribeForeignStates(config.optionSourceBatteryLoad);
 };
