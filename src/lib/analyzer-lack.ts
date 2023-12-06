@@ -3,7 +3,10 @@ import { AverageValueHandler } from './average-value-handler';
 import { XID_EEG_STATE_LOSS, XID_INGOING_BAT_SOC } from './dp-handler';
 
 export class AnalyzerLack {
-	constructor(private adapter: AdapterInstance, private avgValueHandler: AverageValueHandler) {}
+	constructor(
+		private adapter: AdapterInstance,
+		private avgValueHandler: AverageValueHandler,
+	) {}
 
 	// TODO move to config
 	public static readonly lackReportingThreshold = -0.5;

@@ -2,8 +2,20 @@
 {
 	// To update the compilation target, install a different version of @tsconfig/node... and reference it here
 	// https://github.com/tsconfig/bases#node-16-tsconfigjson
-	"extends": "@tsconfig/node20/tsconfig.json",
+//	"extends": "@tsconfig/node18/tsconfig.json",
 	"compilerOptions": {
+
+		// copied "@tsconfig/node18/tsconfig.json" values, due to issue that mocha cannot find it
+			"lib": ["es2023"],
+			"module": "node16",
+			"target": "es2022",
+
+			"strict": true,
+			"esModuleInterop": true,
+			"skipLibCheck": true,
+			"forceConsistentCasingInFileNames": true,
+			"moduleResolution": "node16",
+
 		// do not compile anything, this file is just to configure type checking
 		// the compilation is configured in tsconfig.build.json
 		"noEmit": true,

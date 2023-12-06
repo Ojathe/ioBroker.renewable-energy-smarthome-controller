@@ -93,13 +93,9 @@ describe('average-value.handler', () => {
 					await handler.calculate();
 
 					//Assert
-					expect(adapter.sendToAsync).to.be.calledWith(
-						'history.0',
-						'getHistory',
-						sinon.match({
-							id: `${adapter.name}.${adapter.instance}.${testCase.selector(handler).xidCurrent}`,
-						}),
-					);
+					expect(adapter.sendTo).to.be.calledWithMatch('history.0', 'getHistory', {
+						id: `${adapter.name}.${adapter.instance}.${testCase.selector(handler).xidCurrent}`,
+					});
 				});
 			});
 		});
