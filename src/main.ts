@@ -56,11 +56,11 @@ export class RenewableEnergySmarthomeController extends utils.Adapter {
 		// TODO make sure that adapter will be restarted after config change
 		this.log.debug('config ' + this.config);
 
-		createObjects(this);
+		await createObjects(this);
 
 		addSubscriptions(this, this.config);
 
-		setStateAsBoolean(this, XID_EEG_STATE_OPERATION, this.config.optionEnergyManagementActive);
+		await setStateAsBoolean(this, XID_EEG_STATE_OPERATION, this.config.optionEnergyManagementActive);
 
 		// TODO Work in progress
 
@@ -73,7 +73,7 @@ export class RenewableEnergySmarthomeController extends utils.Adapter {
 			this.config.optionSourceTotalLoad,
 			this.config.optionSourceBatteryLoad,
 		].forEach((externalId) => {
-			console.log('initializing: ' + externalId);
+			console.debug('initializing: ' + externalId);
 
 			this.updateIngoingValue(externalId);
 		});
@@ -85,12 +85,12 @@ export class RenewableEnergySmarthomeController extends utils.Adapter {
 		// calculating average Values
 		// TODO make interval configurable
 		scheduleJob('*/20 * * * * *', () => {
-			console.log('calculating average Values');
+			console.debug('calculating average Values');
 			this.avgValueHandler!.calculate();
 		});
 
 		scheduleJob('*/30 * * * * *', () => {
-			console.log('C H E C K I N G   F O R   B O N U S  /  L A C K');
+			console.debug('C H E C K I N G   F O R   B O N U S  /  L A C K');
 			this.analyzerBonus!.run();
 			this.analyzerLack!.run();
 		});
@@ -147,14 +147,14 @@ export class RenewableEnergySmarthomeController extends utils.Adapter {
 		const xidtoUpdate = this.getInnerStateXid(externalId);
 		if (xidtoUpdate) {
 			this.setState(xidtoUpdate, { val: value, ack: true });
-			console.log(`Updating ingoing-value '${xidtoUpdate}' from '${externalId}' with '${value}'`);
+			console.debug(`Updating ingoing-value '${xidtoUpdate}' from '${externalId}' with '${value}'`);
 		}
 	}
 
 	private async updateIngoingValue(externalId: string): Promise<void> {
 		const state = await this.getForeignStateAsync(externalId);
 
-		console.log('state', state);
+		console.debug('state', state);
 		this.updateIngoingStateWithValue(externalId, state?.val);
 	}
 
@@ -186,6 +186,7 @@ export class RenewableEnergySmarthomeController extends utils.Adapter {
 
 		return xidtoUpdate;
 	}
+
 	// If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
 	// /**
 	//  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
