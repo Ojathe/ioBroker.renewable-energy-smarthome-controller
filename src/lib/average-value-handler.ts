@@ -11,28 +11,37 @@ import {
 import { getStateAsBoolean, getStateAsNumber } from './util/state-util';
 
 export class AverageValueHandler {
+	private constructor(private adapter: AdapterInstance) {}
+
 	private _solar: AverageValue | undefined;
+
 	public get solar(): AverageValue {
 		return this._solar!;
 	}
+
 	private _powerPv: AverageValue | undefined;
+
 	public get powerPv(): AverageValue {
 		return this._powerPv!;
 	}
+
 	private _powerDif: AverageValue | undefined;
+
 	public get powerDif(): AverageValue {
 		return this._powerDif!;
 	}
+
 	private _powerGrid: AverageValue | undefined;
+
 	public get powerGrid(): AverageValue {
 		return this._powerGrid!;
 	}
+
 	private _batLoad: AverageValue | undefined;
+
 	public get batLoad(): AverageValue {
 		return this._batLoad!;
 	}
-
-	private constructor(private adapter: AdapterInstance) {}
 
 	static async build(adapter: AdapterInstance): Promise<AverageValueHandler> {
 		const val = new AverageValueHandler(adapter);
@@ -65,7 +74,7 @@ export class AverageValueHandler {
 					return Number.NEGATIVE_INFINITY;
 				}
 
-				console.log(
+				console.debug(
 					`Calculating PowerDif Load:${load} kWh, PV-Gen: ${pvPower} kWh => Dif of ${pvPower - load}`,
 				);
 
@@ -105,7 +114,7 @@ export class AverageValueHandler {
 			sourceVal = await item.mutation(sourceVal);
 		}
 
-		console.log(`Updating Current Value (${sourceVal}) with xid: ${item.xidCurrent}`);
+		console.debug(`Updating Current Value (${sourceVal}) with xid: ${item.xidCurrent}`);
 		await this.adapter.setStateAsync(item.xidCurrent, sourceVal);
 
 		try {
@@ -113,6 +122,14 @@ export class AverageValueHandler {
 			const start10Min = end - 60 * 1000 * 10;
 			const start5Min = end - 60 * 1000 * 5;
 
+			this.adapter.sendTo('history.0', 'getHistory', {
+				id: `${this.adapter.name}.${this.adapter.instance}.${item.xidCurrent}`,
+				options: {
+					start: start10Min,
+					end: end,
+					aggregate: 'none',
+				},
+			});
 			const result = await this.adapter.sendToAsync('history.0', 'getHistory', {
 				id: `${this.adapter.name}.${this.adapter.instance}.${item.xidCurrent}`,
 				options: {
@@ -139,8 +156,8 @@ export class AverageValueHandler {
 		values = values.filter((item) => item.val > 0 && item.ts >= startInMs);
 
 		const { sum, count, avg } = calculateAverageValue(values);
-		console.log(`Updating Average Value ( ${avg} ) (sum: ${sum}, count: ${count}) with xid: ` + xidTarget);
-		this.adapter.setStateAsync(xidTarget, { val: avg, ack: true });
+		console.debug(`Updating Average Value ( ${avg} ) (sum: ${sum}, count: ${count}) with xid: ` + xidTarget);
+		await this.adapter.setStateAsync(xidTarget, { val: avg, ack: true });
 	}
 }
 

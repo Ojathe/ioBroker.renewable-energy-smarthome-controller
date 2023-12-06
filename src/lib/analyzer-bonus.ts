@@ -9,7 +9,10 @@ export class AnalyzerBonus {
 	public static readonly bonusReportThreshold: number = 0.1;
 	public static readonly batChargeMinimum: number = 10;
 
-	constructor(private adapter: AdapterInstance, private avgValueHandler: AverageValueHandler) {}
+	constructor(
+		private adapter: AdapterInstance,
+		private avgValueHandler: AverageValueHandler,
+	) {}
 
 	public async run(): Promise<void> {
 		// TODO investigate on how to configure values

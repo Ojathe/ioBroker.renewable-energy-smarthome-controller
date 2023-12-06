@@ -5,14 +5,14 @@ export const getStateAsNumber = async (adapter: AdapterInstance, xid: string): P
 	const state = await adapter.getStateAsync(xid);
 
 	if (!state) {
-		console.log(
+		console.debug(
 			`Result is undefined: 'await adapter.getStateAsync(${adapter.name}.${adapter.instance}. + ${xid})'`,
 		);
 		return undefined;
 	}
 
 	if (typeof state.val !== 'number') {
-		console.log(
+		console.debug(
 			`Result is not a number: 'await adapter.getStateAsync(${adapter.name}.${adapter.instance}. + ${xid})'`,
 		);
 		return undefined;

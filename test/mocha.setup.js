@@ -7,6 +7,8 @@ process.env.TS_NODE_PROJECT = 'tsconfig.json';
 // Make ts-node respect the "include" key in tsconfig.json
 process.env.TS_NODE_FILES = 'TRUE';
 
+process.env.TS_NODE_TRANSPILE_ONLY = 'TRUE';
+
 // Don't silently swallow unhandled rejections
 process.on('unhandledRejection', (e) => {
 	throw e;
@@ -16,7 +18,7 @@ process.on('unhandledRejection', (e) => {
 // and load chai-as-promised and sinon-chai by default
 const sinonChai = require('sinon-chai');
 const chaiAsPromised = require('chai-as-promised');
-const { should, use } = require('chai');
+const {should, use} = require('chai');
 
 should();
 use(sinonChai);
